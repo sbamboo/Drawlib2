@@ -1,0 +1,14 @@
+{
+    "format": 1,
+    "fFormat": "JSON",
+    "libInfo": {
+        "name":    "ImageRenderer",
+        "desc":    "Image cli renderer made in python.",
+        "version": "2.1",
+        "vid":     "Nan",
+        "release": "Nan",
+        "changelog": "Nan",
+        "author":  "Simon Kalmi Claesson",
+        "dependencies": []
+    }
+}
