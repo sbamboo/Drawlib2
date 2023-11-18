@@ -1,5 +1,3 @@
-from distutils.sysconfig import customize_compiler
-from typing import Text
 from libs.stringTags import formatStringTags
 
 import re
@@ -45,3 +43,15 @@ class TextObj():
         return removeAnsiSequences(self.__str__())[index]
     def split(self,*args,**kwargs):
         return str(self).split(*args,**kwargs)
+    def exprt(self) -> dict:
+        return {
+            "stdPalette": self.stdPalette,
+            "palette": self.palette,
+            "text": self.text,
+            "customTags": self.customTags
+        }
+    def imprt(self,data=dict):
+        self.stdPalette = data["stdPalette"]
+        self.palette = data["palette"]
+        self.text = data["text"]
+        self.customTags = data["customTags"]

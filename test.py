@@ -1,17 +1,12 @@
 from libs.conUtils import pause
-from core import BufferOutput,vh,vw
+from core import BufferOutput,vh,vw,HybridOutput,ConsoleOutput
 from pointGroupAlgorithms import *
 from coloring import TextObj
+from linedraw import *
 import time
 
-out = BufferOutput(vh,vw)
-out.create()
+coords = beethams_line_algorithm(0,0,vw(),0)
 
-coords = simple_triangle(10,10, 20,0, 30,10)
-tx = TextObj("{b.red} {r}")
-tx2 = TextObj("{b.blue} {r}")
+tx = TextObj("{#ff589a}{u.2592}{r}")
 
-out.clear()
-out.mPut(coords,tx)
-out.draw()
-pause()
+base_mdraw(coords,tx)
