@@ -52,7 +52,7 @@ del placeholders
 
 # region Buffer & Output classes
 class Buffer():
-    def __init__(self,width,height,fallbackChar=" "):
+    def __init__(self,width,height,fallbackChar=" ",autoStr=True):
         if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]
         if width == "vw" or isinstance(width,MethodType): width = getConSize()[0]
         if type(width) != int:
@@ -62,6 +62,7 @@ class Buffer():
         self.bufferSize = (width,height)
         self.buffer = None
         self.fallbackChar = fallbackChar
+        self.autoStr = autoStr
     def isCreated(self):
         if self.buffer == None:
             return False
@@ -99,6 +100,7 @@ class Buffer():
         if self.isCreated() == False:
             raise UncreatedBuffer()
         # put
+        if self.autoStr == True: st = str(st)
         self.buffer[y][x] = st
     def draw(self,nc=False):
         # raise on non-created
@@ -112,6 +114,11 @@ class Buffer():
                 if v == "" or v == None: v = self.fallbackChar
                 draw(x,y,v)
     def putDelim(self,x,y,st,delim=";"):
+        self.anyOutOfBounds([x],[y])
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # put
         if len(delim) > 1:
             raise DelimToLong()
         st = st.replace(f"\\{delim}","§delim§")
@@ -122,16 +129,21 @@ class Buffer():
         for i in range(ln):
             self.put(x+i,y,sst[i])
     def putCharList(self,x,y,li=list):
+        self.anyOutOfBounds([x],[y])
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # put
         ln = len(li)
         for i in range(ln):
             self.put(x+i,y,sst[i])
-    def _toStr(self) -> dict:
+    def _toStr(self,autoStr=False) -> dict:
         data = {}
         for y in self.buffer:
             data[y] = {}
             for x in self.buffer[y]:
                 v = self.buffer[y][x]
-                if isinstance(v, TextObj):
+                if isinstance(v, TextObj) and autoStr == False:
                     v = v.exprt()
                     v["tag"] = 1
                 else:
@@ -139,7 +151,11 @@ class Buffer():
                 data[y][x] = v
         return data
     def exportF(self) -> str:
-        return json.dumps(self._asStr())
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # exprt
+        return json.dumps(self._toStr())
     def importF(self,jsonStr):
         data = json.loads(jsonStr)
         for y in data:
@@ -149,7 +165,27 @@ class Buffer():
                     data[y][x] = TextObj("")
                     data[y][x].imprt(idata)
         self.buffer = data
-
+    def getStrLines(self):
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # get
+        lines = []
+        for y in self.buffer:
+            lines.append("")
+            for x in self.buffer[y]:
+                lines[y] += self.buffer[y][x]
+        return lines
+    def copyStr(self):
+        lines = self.getStrLines()
+        return '\n'.join(lines)
+    def fill(self,st=str):
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        for y in self.buffer:
+            for xi in range(self.bufferSize[0]):
+                self.put(xi,y,st)
 
 class Output():
     def __init__(self,width=None,height=None,name="Drawlib.Buffer.Generic"):
@@ -172,13 +208,17 @@ class Output():
             self.put(pair[0],pair[1],st)
 
 class BufferOutput(Output):
-    def __init__(self,width=None,height=None,name="Drawlib.Buffer.Buffer", fallbackChar=" "):
+    def __init__(self,width=None,height=None,name="Drawlib.Buffer.Buffer", fallbackChar=" ",autoStr=True,buffInst=None):
         if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]
         if width == "vw" or isinstance(width,MethodType): width = getConSize()[0]
         super().__init__(width,height,name)
-        self.buffer = Buffer(width,height,fallbackChar=fallbackChar)
+        if buffInst != None:
+            self.buffer = buffInst
+        else:
+            self.buffer = Buffer(width,height,fallbackChar=fallbackChar,autoStr=autoStr)
     def create(self):
         self.buffer.create()
+        return self
     def destroy(self):
         self.buffer.destroy()
     def clear(self):
@@ -191,6 +231,8 @@ class BufferOutput(Output):
         print("\033[0m")
     def getBuf(self,retEmpty=False):
         return self.buffer.getBuf(retEmpty)
+    def fill(self,st=str):
+        self.buffer.fill(st)
 
 class ConsoleOutput(Output):
     def __init__(self):
@@ -226,12 +268,19 @@ class ConsoleOutput(Output):
         # put
         draw(x,y,st)
         print("\033[0m")
+    def fill(self,st=str):
+        for y in range(self.conSize[-1]):
+            for x in range(self.conSize[0]):
+                self.put(x,y,st)
 
 class HybridOutput(Output):
-    def __init__(self,name="Drawlib.Buffer.Hybrid", fallbackChar=" "):
+    def __init__(self,name="Drawlib.Buffer.Hybrid", fallbackChar=" ",autoStr=True,buffInst=None):
         self.conSize = getConSize()
         super().__init__(self.conSize[0],self.conSize[-1],name)
-        self.buffer = Buffer(self.conSize[0],self.conSize[-1],fallbackChar=fallbackChar)
+        if buffInst != None:
+            self.buffer = buffInst
+        else:
+            self.buffer = Buffer(self.conSize[0],self.conSize[-1],fallbackChar=fallbackChar,autoStr=autoStr)
     def getSize(self):
         self.conSize = getConSize()
         return self.conSize
@@ -243,6 +292,7 @@ class HybridOutput(Output):
         setConSize(x,y)
     def create(self):
         self.buffer.create()
+        return self
     def destroy(self):
         self.buffer.destroy()
     def clear(self):
@@ -263,16 +313,54 @@ class HybridOutput(Output):
         self.buffer.put(x,y,st=inp)
     def getBuf(self,retEmpty=False):
         return self.buffer.getBuf(retEmpty)
+    def fill(self,st=str):
+        # buf
+        self.buffer.fill(st)
+        # con
+        for y in range(self.conSize[-1]):
+            for x in range(self.conSize[0]):
+                self.put(x,y,st)
+
+class ChannelOutput(Output):
+    def __init__(self,channelObj,width=None,height=None,name="Drawlib.Buffer.Channel", fallbackChar=" ",autoStr=True,buffInst=None):
+        if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]
+        if width == "vw" or isinstance(width,MethodType): width = getConSize()[0]
+        super().__init__(width,height,name)
+        if buffInst != None:
+            self.buffer = buffInst
+        else:
+            self.buffer = Buffer(width,height,fallbackChar=fallbackChar,autoStr=autoStr)
+        self.channelClassInstance = channelObj
+    def create(self):
+        self.buffer.create()
+        return self
+    def destroy(self):
+        self.buffer.destroy()
+    def clear(self):
+        self.buffer.clear()
+    def put(self,x=int,y=int,inp=str):
+        # put
+        self.buffer.put(x,y,st=inp)
+    def draw(self,nc=False):
+        ostr = self.buffer.copyStr()
+        self.channelClassInstance.send(ostr)
+    def getBuf(self,retEmpty=False):
+        return self.buffer.getBuf(retEmpty)
+    def fill(self,st=str):
+        self.buffer.fill(st)
 
 class DrawlibOut():
-    def __init__(self,mode=None,overwWidth=None,overwHeight=None,buffIChar=None):
+    def __init__(self,mode=None,overwWidth=None,overwHeight=None,buffIChar=None,buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
+        self.allowedMods = ["Buffer","Console","Hybrid","Channel"]
+        self.defMode = "Console"
         if overwHeight == "vh" or isinstance(overwHeight,MethodType): overwHeight = getConSize()[-1]
         if overwWidth == "vw" or isinstance(overwHeight,MethodType): overwWidth = getConSize()[0]
         self.overwWidth = overwWidth
         self.overwHeight = overwHeight
         self.buffIChar = buffIChar
-        self.allowedMods = ["Buffer","Console","Hybrid"]
-        self.defMode = "Console"
+        self.buffAutoStr = buffAutoStr
+        self.channelObj = channelObj
+        self.buffInst = buffInst
         if mode in self.allowedMods:
             self.mode = mode
         else:
@@ -286,16 +374,25 @@ class DrawlibOut():
     def resM(self):
         self.mode = self.defMode
     def _link(self):
-        if self.mode == "Buffer":
-            width = vw
-            height = vh
-            if self.overwWidth != None: width = self.overwWidth
-            if self.overwHeight != None: height = self.overwHeight
-            self.linked = BufferOutput(width,height,fallbackChar=self.buffIChar)
-        elif self.mode == "Console":
-            self.linked = ConsoleOutput()
-        elif self.mode == "Hybrid":
-            self.linked = HybridOutput(fallbackChar=self.buffIChar)
+        if outputObj != None:
+            self.linked = outputObj
+        else:
+            if self.mode == "Buffer":
+                width = vw
+                height = vh
+                if self.overwWidth != None: width = self.overwWidth
+                if self.overwHeight != None: height = self.overwHeight
+                self.linked = BufferOutput(width,height,fallbackChar=self.buffIChar,autoStr=self.buffAutoStr,buffInst=buffInst).create()
+            elif self.mode == "Console":
+                self.linked = ConsoleOutput()
+            elif self.mode == "Hybrid":
+                self.linked = HybridOutput(fallbackChar=self.buffIChar,autoStr=self.buffAutoStr,buffInst=buffInst).create()
+            elif self.mode == "Channel":
+                width = vw
+                height = vh
+                if self.overwWidth != None: width = self.overwWidth
+                if self.overwHeight != None: height = self.overwHeight
+                self.linked = ChannelOutput(self.channelObj,width,height,fallbackChar=self.buffIChar,autoStr=self.buffAutoStr,buffInst=buffInst).create()
     def put(self,x,y,st):
         if self.linked == None: self._link()
         self.linked.put(x,y,st)
@@ -308,28 +405,54 @@ class DrawlibOut():
     def mPut(self,*args,**kwargs):
         if self.linked == None: self._link()
         self.linked.mPut(*args,**kwargs)
+    def fill(self,st=str):
+        if self.linked == None: self._link()
+        self.linked.fill(st)
 # endregion
 
 # region draw functions
-def base_draw(x,y,st=str,drawNc=False,overwWidth=None,overwHeight=None,mode="Console",buffIChar=" "):
+def base_draw(x,y,st=str,overwWidth=None,overwHeight=None,drawNc=False,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
     _obj = DrawlibOut(
         mode=mode,
         overwWidth=overwWidth,
         overwHeight=overwHeight,
-        buffIChar=buffIChar
+        buffIChar=buffIChar,
+        buffAutoStr=buffAutoStr,
+        buffInst=buffInst,
+        channelObj=channelObj,
+        outputObj=outputObj
     )
     _obj.put(x,y,st)
     if _obj.mode != "Console":
         _obj.draw(drawNc)
 
-def base_mdraw(coords,st=str,drawNc=False,overwWidth=None,overwHeight=None,mode="Console",buffIChar=" "):
+def base_mdraw(coords,st=str,overwWidth=None,overwHeight=None,drawNc=False,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
     _obj = DrawlibOut(
         mode=mode,
         overwWidth=overwWidth,
         overwHeight=overwHeight,
-        buffIChar=buffIChar
+        buffIChar=buffIChar,
+        buffAutoStr=buffAutoStr,
+        buffInst=buffInst,
+        channelObj=channelObj,
+        outputObj=outputObj
     )
     _obj.mPut(coords,st)
+    if _obj.mode != "Console":
+        _obj.draw(drawNc)
+
+def base_fill(st=str,overwWidth=None,overwHeight=None,mode="Console",drawNc=False,buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
+    _obj = DrawlibOut(
+        mode=mode,
+        overwWidth=overwWidth,
+        overwHeight=overwHeight,
+        buffIChar=buffIChar,
+        buffAutoStr=buffAutoStr,
+        buffInst=buffInst,
+        channelObj=channelObj,
+        outputObj=outputObj
+    )
+    _obj.fill(st)
     if _obj.mode != "Console":
         _obj.draw(drawNc)
 # endregion
