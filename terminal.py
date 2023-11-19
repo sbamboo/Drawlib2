@@ -26,8 +26,13 @@ def fill_terminal(char,addX=0,addY=0,savePos=False):
   if savePos == True: print("\033[u", end="")
 
 
-def draw(x,y,st):
+def draw(x,y,st,ansicode=None):
   st = str(st)
+  if ansicode != None:
+    if "\033[" in ansicode:
+      st = ansicode + st
+    else:
+      st = f"\033[{ansicode}" + st
   # ANSI escape code for moving the cursor to a specific position
   move_cursor_code = f"\033[{y};{x}H"
   # ANSI escape code for resetting the cursor position
