@@ -1,7 +1,7 @@
 from types import MethodType
 from libs.conUtils import clear,getConSize,setConSize
 from terminal import draw
-from coloring import removeAnsiSequences,TextObj,DrawlibStdPalette
+from coloring import removeAnsiSequences,TextObj,DrawlibStdPalette,autoNoneColor
 import json,os
 
 # region Exceptions
@@ -34,6 +34,26 @@ class DelimToLong(Exception):
     def __init__(self,message="Drawlib.Buffer: Deliminator to long!"):
         self.message = message
         super().__init__(self.message)
+
+class InvalidOutputObj(Exception):
+    def __init__(self,message="Drawlib: Invalid and/or non-created output object! Pass a valid object or use base_croutput()."):
+        self.message = message
+        super().__init__(self.message)
+
+class InvalidSectionRangeType(Exception):
+    def __init__(self,message="Drawlib.Buffer: SecionRanges must be of type 'list' or 'tuple' containing two values a min and one max."):
+        self.message = message
+        super().__init__(self.message)
+
+class SectionRangeOutOfBounds(Exception):
+    def __init__(self,message="Drawlib.Buffer: Attempted use of section-range outside the buffer size."):
+        self.message = message
+        super().__init__(self.message)
+
+class NoOutput(Exception):
+    def __init__(self,message="Drawlib: Attempted use of undefined output object."):
+        self.message = message
+        super().__init__(self.message)
 # endregion
 
 # region Placeholders
@@ -50,11 +70,49 @@ vw = placeholders.vw
 del placeholders
 # endregion
 
+# region Helpers
+def checkSectionRange(xRange=None,yRange=None,bufferXKeys=list,bufferYKeys=list) -> bool:
+    t = "Drawlib.Buffer: Attempted use of section-range outside the buffer size."
+    section = False
+    validRange = True
+    if xRange != None:
+        if isinstance(xRange, (list,tuple)) != True or len(xRange) > 2: raise InvalidSectionRangeType()
+        errMsg = ""
+        try:
+            if xRange[0] < int(bufferXKeys[0]) or xRange[1] > int(bufferXKeys[-1]):
+                validRange = False
+                errMsg=f"XBoundsCheck\nXrangeMin:{xRange[0]} < XbuffMin:{int(bufferXKeys[0])} || XrangeMax:{xRange[1]} > XbuffMax:{int(bufferXKeys[-1])}"
+        except IndexError as e:
+            validRange = False
+            errMsg=f"ErrorOnXBoundsCheck\nIndex: [0,-1]\nxRange: {xRange}\nbuffXkeys: {bufferXKeys}\nyRange: {yRange}\nbuffYkeys: {bufferYKeys}\nException: {e}"
+        except Exception as e:
+            validRange = False
+            errMsg=f"ErrorOnXBoundsCheck: {e}"
+        xRange = range(xRange[0],xRange[1])
+        section = True
+    if yRange != None:
+        if isinstance(yRange, (list,tuple)) != True or len(yRange) > 2: raise InvalidSectionRangeType()
+        try:
+            if yRange[0] < int(bufferYKeys[0]) or yRange[1] > int(bufferYKeys[-1]):
+                validRange = False
+                errMsg=f"YBoundsCheck\nYrangeMin:{yRange[0]} < YbuffMin:{int(bufferYKeys[0])} || YrangeMax:{yRange[1]} > YbuffMax:{int(bufferYKeys[-1])}"
+        except IndexError as e:
+            validRange = False
+            errMsg=f"ErrorOnXBoundsCheck\nIndex: [0,-1]\nxRange: {xRange}\nbuffXkeys: {bufferXKeys}\nyRange: {yRange}\nbuffYkeys: {bufferYKeys}\nException: {e}"
+        except Exception as e:
+            validRange = False
+            errMsg=f"ErrorOnYBoundsCheck: {e}"
+        yRange = range(yRange[0],yRange[1])
+        section = True
+    if validRange == False: raise SectionRangeOutOfBounds(errMsg)
+    return section,xRange,yRange
+# endregion
+
 # region Buffer & Output classes
 class Buffer():
     def __init__(self,width,height,fallbackChar=" ",autoStr=True):
-        if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]
-        if width == "vw" or isinstance(width,MethodType): width = getConSize()[0]
+        if height == "vh" or isinstance(height,MethodType): height = int(getConSize()[-1])
+        if width == "vw" or isinstance(width,MethodType): width = int(getConSize()[0])
         if type(width) != int:
             width = max(width)+1
         if type(height) != int:
@@ -102,20 +160,33 @@ class Buffer():
         # put
         if self.autoStr == True: st = str(st)
         self.buffer[y][x] = st
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette):
-        if palette != None:
-            if palette.get(baseColor) != None:
-                baseColor = palette.get(baseColor)
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+        baseColor = autoNoneColor(baseColor,palette)
         # raise on non-created
         if self.isCreated() == False:
             raise UncreatedBuffer()
-        # draw
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(range(0,self.bufferSize[0]+1)), list(range(0,self.bufferSize[1]+1)))
+        # Clear
         if nc == False: clear()
-        for y in self.buffer:
-            for x in self.buffer[y]:
-                v = self.buffer[y].get(x)
-                if v == "" or v == None: v = self.fallbackChar
-                draw(x,y,v,baseColor)
+        # draw sectioned
+        if section == True:
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    xKeys = list(self.buffer[y].keys())
+                    for x in xRange:
+                        if x in xKeys:
+                            v = self.buffer[y].get(x)
+                            if v == "" or v == None: v = self.fallbackChar
+                            draw(x,y,v,baseColor)
+        # draw un-sectioned
+        else:
+            for y in self.buffer:
+                for x in self.buffer[y]:
+                    v = self.buffer[y].get(x)
+                    if v == "" or v == None: v = self.fallbackChar
+                    draw(x,y,v,baseColor)
     def putDelim(self,x,y,st,delim=";"):
         self.anyOutOfBounds([x],[y])
         # raise on non-created
@@ -159,7 +230,7 @@ class Buffer():
             raise UncreatedBuffer()
         # exprt
         return json.dumps(self._toStr())
-    def importF(self,jsonStr):
+    def importF(self,jsonStr,encoding="utf-8"):
         data = json.loads(jsonStr)
         for y in data:
             for x in data[y]:
@@ -168,27 +239,53 @@ class Buffer():
                     data[y][x] = TextObj("")
                     data[y][x].imprt(idata)
         self.buffer = data
-    def getStrLines(self):
+    def getStrLines(self,xRange=None,yRange=None):
         # raise on non-created
         if self.isCreated() == False:
             raise UncreatedBuffer()
-        # get
-        lines = []
-        for y in self.buffer:
-            lines.append("")
-            for x in self.buffer[y]:
-                lines[y] += self.buffer[y][x]
-        return lines
-    def copyStr(self):
-        lines = self.getStrLines()
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(self.buffer[0].keys()), list(self.buffer.keys()))
+        # get sectioned
+        if section == True:
+            lines = []
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    lines.append("")
+                    xKeys = list(self.buffer[y].keys())
+                    for x in xRange:
+                        if x in xKeys:
+                            lines[y] += self.buffer[y][x]
+            return lines
+        # get un-sectioned
+        else:
+            lines = []
+            for y in self.buffer:
+                lines.append("")
+                for x in self.buffer[y]:
+                    lines[y] += self.buffer[y][x]
+            return lines
+    def copyStr(self,xRange=None,yRange=None):
+        lines = self.getStrLines(xRange,yRange)
         return '\n'.join(lines)
-    def fill(self,st=str):
+    def fill(self,st=str,xRange=None,yRange=None):
         # raise on non-created
         if self.isCreated() == False:
             raise UncreatedBuffer()
-        for y in self.buffer:
-            for xi in range(self.bufferSize[0]):
-                self.put(xi,y,st)
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(range(0,self.bufferSize[0]+1)), list(self.buffer.keys()))
+        # Sectioned
+        if section == True:
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    for x in xRange:
+                        self.put(x,y,st)                    
+        # Un-Sectioned
+        else:
+            for y in self.buffer:
+                for xi in range(self.bufferSize[0]):
+                    self.put(xi,y,st)
 
 class Output():
     def __init__(self,width=None,height=None,name="Drawlib.Buffer.Generic"):
@@ -197,6 +294,7 @@ class Output():
         self.name = name
         self.width = width
         self.height = height
+        self.validForBase = True
     def _checkSizeInit(self):
         if self.width == None or self.height == None:
             raise InvalidOutputSize(self.name+": Invalid Size!")
@@ -204,7 +302,7 @@ class Output():
         raise UnfinishedMethod()
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
         raise UnfinishedMethod()
-    def draw(self,x=int,y=int,nc=False,baseColor=None,palette=None):
+    def draw(self,x=int,y=int,nc=False,baseColor=None,palette=None,xRange=None,yRange=None):
         raise UnfinishedMethod()
     def mPut(self,coords=list,st=str,baseColor=None,palette=None):
         for pair in coords:
@@ -235,13 +333,13 @@ class BufferOutput(Output):
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
         # put
         self.buffer.put(x,y,st=inp)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette):
-        self.buffer.draw(nc,baseColor,palette)
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+        self.buffer.draw(nc,baseColor,palette,xRange=xRange,yRange=yRange)
         print("\033[0m")
     def getBuf(self,retEmpty=False):
         return self.buffer.getBuf(retEmpty)
-    def fill(self,st=str,baseColor=None,palette=None):
-        self.buffer.fill(st)
+    def fill(self,st=str,baseColor=None,palette=None,xRange=None,yRange=None):
+        self.buffer.fill(st,xRange,yRange)
 
 class ConsoleOutput(Output):
     def __init__(self):
@@ -272,18 +370,29 @@ class ConsoleOutput(Output):
     def clear(self):
         clear()
     def put(self,x=int,y=int,st=str,baseColor=None,palette=DrawlibStdPalette):
-        if palette != None:
-            if palette.get(baseColor) != None:
-                baseColor = palette.get(baseColor)
+        baseColor = autoNoneColor(baseColor,palette)
         # handle out-of-bounds
         self.anyOutOfBounds([x],[y])
         # put
         draw(x,y,st,baseColor)
         print("\033[0m")
-    def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette):
-        for y in range(self.conSize[-1]):
-            for x in range(self.conSize[0]):
-                self.put(x,y,st,baseColor,palette)
+    def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+        # Check sections
+        yKeys = list(range(0,self.conSize[-1]+1))
+        xKeys = list(range(0,self.conSize[0]+1))
+        section,xRange,yRange = checkSectionRange(xRange,yRange, xKeys, yKeys)
+        # Sectioned
+        if section == True:
+            for y in yRange:
+                if y in yKeys:
+                    for x in xRange:
+                        if x in xKeys:
+                            self.put(x,y,st,baseColor,palette)
+        # Un-Sectioned
+        else:
+            for y in range(self.conSize[-1]):
+                for x in range(self.conSize[0]):
+                    self.put(x,y,st,baseColor,palette)
 
 class HybridOutput(Output):
     def __init__(self,name="Drawlib.Buffer.Hybrid", fallbackChar=" ",autoStr=True,buffInst=None):
@@ -310,14 +419,12 @@ class HybridOutput(Output):
     def clear(self):
         clear()
         self.buffer.clear()
-    def put(self,x=int,y=int,inp=str,baseColor=None,palette=DrawlibStdPalette):
-        if palette != None:
-            if palette.get(baseColor) != None:
-                baseColor = palette.get(baseColor)
-        self.buffer.put(x,y,st=inp)
+    def put(self,x=int,y=int,inp=str,baseColor=None,palette=DrawlibStdPalette,skpBuf=False):
+        baseColor = autoNoneColor(baseColor,palette)
+        if skpBuf != True: self.buffer.put(x,y,st=inp)
         draw(x,y,inp,baseColor)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette):
-        self.buffer.draw(nc,baseColor)
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+        self.buffer.draw(nc,baseColor,xRange=xRange,yRange=yRange)
     def clearCon(self):
         clear()
     def clearBuf(self):
@@ -328,13 +435,26 @@ class HybridOutput(Output):
         self.buffer.put(x,y,st=inp)
     def getBuf(self,retEmpty=False):
         return self.buffer.getBuf(retEmpty)
-    def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette):
+    def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
         # buf
-        self.buffer.fill(st)
+        self.buffer.fill(st,xRange,yRange)
         # con
-        for y in range(self.conSize[-1]):
-            for x in range(self.conSize[0]):
-                self.put(x,y,st,baseColor,palette)
+        # Check sections
+        yKeys = list(range(0,self.conSize[-1]+1))
+        xKeys = list(range(0,self.conSize[0]+1))
+        section,xRange,yRange = checkSectionRange(xRange,yRange, xKeys, yKeys)
+        # Sectioned
+        if section == True:
+            for y in yRange:
+                if y in yKeys:
+                    for x in xRange:
+                        if x in xKeys:
+                            self.put(x,y,st,baseColor,palette)
+        # Un-Sectioned
+        else:
+            for y in range(self.conSize[-1]):
+                for x in range(self.conSize[0]):
+                    self.put(x,y,st,baseColor,palette,skpBuf=True)
 
 class ChannelOutput(Output):
     def __init__(self,channelObj,width=None,height=None,name="Drawlib.Buffer.Channel", fallbackChar=" ",autoStr=True,buffInst=None):
@@ -356,16 +476,18 @@ class ChannelOutput(Output):
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
         # put
         self.buffer.put(x,y,st=inp)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette):
-        ostr = self.buffer.copyStr()
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+        ostr = self.buffer.copyStr(xRange,yRange)
         self.channelClassInstance.send(ostr)
     def getBuf(self,retEmpty=False):
         return self.buffer.getBuf(retEmpty)
-    def fill(self,st=str,baseColor=None,palette=None):
-        self.buffer.fill(st)
+    def fill(self,st=str,baseColor=None,palette=None,xRange=None,yRange=None):
+        self.buffer.fill(st,xRange,yRange)
 
 class DrawlibOut():
-    def __init__(self,mode=None,overwWidth=None,overwHeight=None,buffIChar=None,buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
+    def __init__(self,mode=None,overwWidth=None,overwHeight=None,buffIChar=None,buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,wi=None,hi=None,autoLink=False):
+        if wi != None: overwWidth = wi
+        if hi != None: overwHeight = hi
         self.allowedMods = ["Buffer","Console","Hybrid","Channel"]
         self.defMode = "Console"
         if overwHeight == "vh" or isinstance(overwHeight,MethodType): overwHeight = getConSize()[-1]
@@ -377,11 +499,14 @@ class DrawlibOut():
         self.channelObj = channelObj
         self.buffInst = buffInst
         self.outputObj = outputObj
+        self.validForBase = True
         if mode in self.allowedMods:
             self.mode = mode
         else:
             self.mode = self.defMode
         self.linked = None
+        if autoLink == True:
+            self._link()
     def setM(self,mode=None):
         if mode not in self.allowedMods:
             raise InvalidOutputMode()
@@ -412,9 +537,9 @@ class DrawlibOut():
     def put(self,x,y,st,baseColor=None,palette=DrawlibStdPalette):
         if self.linked == None: self._link()
         self.linked.put(x,y,st,baseColor=baseColor,palette=palette)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette):
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
         if self.linked == None: self._link()
-        self.linked.draw(nc=nc,baseColor=baseColor,palette=palette)
+        self.linked.draw(nc=nc,baseColor=baseColor,palette=palette,xRange=xRange,yRange=yRange)
     def clear(self):
         if self.linked == None: self._link()
         self.linked.clear()
@@ -424,14 +549,15 @@ class DrawlibOut():
     def lPut(self,*args,**kwargs):
         if self.linked == None: self._link()
         self.linked.lPut(*args,**kwargs)
-    def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette):
+    def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
         if self.linked == None: self._link()
-        self.linked.fill(st,baseColor,palette)
+        self.linked.fill(st,baseColor,palette,xRange=xRange,yRange=yRange)
 # endregion
 
 # region draw functions
-def base_draw(x,y,st=str,overwWidth=None,overwHeight=None,drawNc=False,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,baseColor=None,palette=DrawlibStdPalette):
-    _obj = DrawlibOut(
+def base_croutput(overwWidth=None,overwHeight=None,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
+    '''Returns a drawlib-output object created with the given parameters.'''
+    return DrawlibOut(
         mode=mode,
         overwWidth=overwWidth,
         overwHeight=overwHeight,
@@ -441,52 +567,58 @@ def base_draw(x,y,st=str,overwWidth=None,overwHeight=None,drawNc=False,mode="Con
         channelObj=channelObj,
         outputObj=outputObj
     )
-    _obj.put(x,y,st,baseColor,palette)
-    if _obj.mode != "Console":
-        _obj.draw(drawNc,baseColor,palette)
 
-def base_mdraw(coords,st=str,overwWidth=None,overwHeight=None,drawNc=False,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,baseColor=None,palette=DrawlibStdPalette):
-    _obj = DrawlibOut(
-        mode=mode,
-        overwWidth=overwWidth,
-        overwHeight=overwHeight,
-        buffIChar=buffIChar,
-        buffAutoStr=buffAutoStr,
-        buffInst=buffInst,
-        channelObj=channelObj,
-        outputObj=outputObj
-    )
-    _obj.mPut(coords,st,baseColor,palette)
-    if _obj.mode != "Console":
-        _obj.draw(drawNc,baseColor,palette)
+def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+    '''Uses a drawlib-output object to draw on x,y.'''
+    valid = True
+    try:
+        if output.mode == None:
+            valid = False
+    except: valid = False
+    if valid == False: raise InvalidOutputObj()
+    output.put(x,y,st,baseColor,palette)
+    try:
+        if output.mode != "Console":
+            output.draw(drawNc,baseColor,palette)
+    except AttributeError(): pass
 
-def base_fill(st=str,overwWidth=None,overwHeight=None,mode="Console",drawNc=False,buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,baseColor=None,palette=DrawlibStdPalette):
-    _obj = DrawlibOut(
-        mode=mode,
-        overwWidth=overwWidth,
-        overwHeight=overwHeight,
-        buffIChar=buffIChar,
-        buffAutoStr=buffAutoStr,
-        buffInst=buffInst,
-        channelObj=channelObj,
-        outputObj=outputObj
-    )
-    _obj.fill(st,baseColor,palette)
-    if _obj.mode != "Console":
-        _obj.draw(drawNc,baseColor,palette)
+def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+    '''Uses a drawlib-output object to draw on each coord-pair in coords list.'''
+    valid = True
+    try:
+        if output.validForBase != True:
+            valid = False
+    except: valid = False
+    if valid == False: raise InvalidOutputObj()
+    output.mPut(coords,st,baseColor,palette)
+    try:
+        if output.mode != "Console":
+            output.draw(drawNc,baseColor,palette)
+    except AttributeError(): pass
 
-def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int, overwWidth=None,overwHeight=None,mode="Console",drawNc=False,buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,baseColor=None,palette=DrawlibStdPalette):
-    # Start by initializing a drawlib-output object
-    _obj = DrawlibOut(
-        mode = mode,
-        overwWidth=overwWidth,
-        overwHeight=overwHeight,
-        buffIChar=buffIChar,
-        buffAutoStr=buffAutoStr,
-        buffInst=buffInst,
-        channelObj=channelObj,
-        outputObj=outputObj
-    )
+def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+    '''Uses a drawlib-output object to draw on each cell.'''
+    valid = True
+    try:
+        if output.validForBase != True:
+            valid = False
+    except: valid = False
+    if valid == False: raise InvalidOutputObj()
+    output.fill(st,baseColor,palette)
+    try:
+        if output.mode != "Console":
+            output.draw(drawNc,baseColor,palette)
+    except AttributeError(): pass
+
+def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+    '''Uses a drawlib-output to draw a texture.'''
+    # Validate output obj
+    valid = True
+    try:
+        if output.validForBase != True:
+            valid = False
+    except: valid = False
+    if valid == False: raise InvalidOutputObj()
     # Get the texture content from the file
     if os.path.exists(textureFile):
         rawContent = open(textureFile, 'r').read()
@@ -504,10 +636,12 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int, overwWidth=None,over
         line = line.replace("\033[0m","")
         line += "\033[0m"
         # Use the object to put the texture on the output
-        _obj.put(tlCoordX,coordY,line,baseColor,palette)
+        output.put(tlCoordX,coordY,line,baseColor,palette)
         # Icrement y
         c += 1
     # If not mode=console then draw
-    if mode != "Console":
-        _obj.draw(baseColor,palette)
+    try:
+        if output.mode != "Console":
+            output.draw(drawNc,baseColor,palette)
+    except AttributeError(): pass
 # endregion

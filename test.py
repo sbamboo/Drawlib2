@@ -9,5 +9,5 @@ out = BufferOutput(vw,vh).create()
 coords = beethams_line_algorithm(0,0,vw(),0)
 tx = TextObj("{#ff589a}{u.2592}{r}")
 
-out.mPut(coords,"#")
+out.mPut(coords,tx)
 out.draw()

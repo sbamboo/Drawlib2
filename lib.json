@@ -6,8 +6,8 @@
         "desc":    "Drawlib is a simple CLI/TUI drawing library (renderer) made in python.",
         "version": "2.0",
         "vid":     "1",
-        "release": "2023-11-17",
-        "changelog": "Added charGeneratorFunctions",
+        "release": "2023-11-22",
+        "changelog": "Rewrote most of the project.",
         "author":  "Simon Kalmi Claesson",
         "dependencies": [
             {

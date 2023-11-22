@@ -13,6 +13,24 @@ def removeAnsiSequences(inputString):
     cleanedString = ansiPattern.sub('', inputString)
     return cleanedString
 
+# Function to also autoNone if invalid input is given
+def autoNoneColor(color,palette):
+    if color == None or palette == None or type(palette) != dict:
+        return None
+    else:
+        if palette.get(color) != None:
+            val = palette.get(color)
+            if "#" in val:
+                background = False
+                if val.strip().startswith("#!"):
+                    background = True
+                    val = val.replace("#!","#",1)
+                val = val.replace("#","")
+                lv = len(val)
+                rgb = [int(val[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)]
+                val = '{};2;{};{};{}'.format(48 if background else 38, rgb[0],rgb[1],rgb[2])
+            else:
+                return val
 
 class TextObj():
     def __init__(self,text,customTags={}):
