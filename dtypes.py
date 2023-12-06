@@ -1,6 +1,6 @@
 # [Imports]
-from .core import base_draw,base_mdraw,NoOutput
-from .coloring import autoNoneColor,DrawlibStdPalette
+from core import base_draw,base_mdraw,NoOutput
+from coloring import autoNoneColor,DrawlibStdPalette
 
 # [Functions Tools]
 def _join_with_delimiter(strings, delimiter):
@@ -301,7 +301,7 @@ class splitPixelGroup():
         if positions != None:
             if isinstance(positions, list) != True: raise ValueError("Positions must be a list!")
         if splitPixelGroup != None:
-            if isinstance(splitPixelGroup, list) != True: raise ValueError("SplitPixelGroup must be a dict!")
+            if isinstance(splitPixelGroup, dict) != True: raise ValueError("SplitPixelGroup must be a dict!")
         self.chars = chars
         self.positions = positions
         if splitPixelGroup != None:

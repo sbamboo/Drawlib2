@@ -2,6 +2,7 @@ from coloring import DrawlibStdPalette
 from dtypes import splitPixelGroup,sprite,texture,sprite_to_texture,sprite_to_cmpxPixelGroup,cmpxPixelGroup_to_splitPixelGroup
 from generators import baseGenerator
 from assets import load_asset,load_texture
+from pointGroupAlgorithms import *
 
 # Base-class to inherit from. Contains pixelGenerator and objectcreator
 class drawlibObj():

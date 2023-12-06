@@ -1,5 +1,5 @@
 import math
-from dypes import normalizeTextureSplit
+from dtypes import normalizeTextureSplit
 from tools import getTopLeft,coordinateDifference,addDiffToCoords
 
 def fillShape(texture=list,backgroundChars=[" "],fillChar=str):
