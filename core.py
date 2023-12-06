@@ -159,7 +159,12 @@ class Buffer():
             raise UncreatedBuffer()
         # put
         if self.autoStr == True: st = str(st)
-        self.buffer[y][x] = st
+        try:
+            self.buffer[y][x] = st
+        except KeyError:
+            if self.buffer.get(y) == None:
+                self.buffer[y] = {}
+            self.buffer[y][x] = st
     def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
         baseColor = autoNoneColor(baseColor,palette)
         # raise on non-created
@@ -313,6 +318,8 @@ class Output():
             y = stY + c
             self.put(stX,y,line,baseColor,palette)
             c += 1
+    def getsize(self):
+        raise UnfinishedMethod()
 
 class BufferOutput(Output):
     def __init__(self,width=None,height=None,name="Drawlib.Buffer.Buffer", fallbackChar=" ",autoStr=True,buffInst=None):
@@ -340,6 +347,8 @@ class BufferOutput(Output):
         return self.buffer.getBuf(retEmpty)
     def fill(self,st=str,baseColor=None,palette=None,xRange=None,yRange=None):
         self.buffer.fill(st,xRange,yRange)
+    def getsize(self):
+        return self.buffer.bufferSize
 
 class ConsoleOutput(Output):
     def __init__(self):
@@ -393,6 +402,8 @@ class ConsoleOutput(Output):
             for y in range(self.conSize[-1]):
                 for x in range(self.conSize[0]):
                     self.put(x,y,st,baseColor,palette)
+    def getsize(self):
+        return self.conSize
 
 class HybridOutput(Output):
     def __init__(self,name="Drawlib.Buffer.Hybrid", fallbackChar=" ",autoStr=True,buffInst=None):
@@ -455,6 +466,8 @@ class HybridOutput(Output):
             for y in range(self.conSize[-1]):
                 for x in range(self.conSize[0]):
                     self.put(x,y,st,baseColor,palette,skpBuf=True)
+    def getsize(self):
+        return (min(self.buffer.bufferSize[0],self.conSize[0]),min(self.buffer.bufferSize[1],self.conSize[1]))
 
 class ChannelOutput(Output):
     def __init__(self,channelObj,width=None,height=None,name="Drawlib.Buffer.Channel", fallbackChar=" ",autoStr=True,buffInst=None):
@@ -483,6 +496,8 @@ class ChannelOutput(Output):
         return self.buffer.getBuf(retEmpty)
     def fill(self,st=str,baseColor=None,palette=None,xRange=None,yRange=None):
         self.buffer.fill(st,xRange,yRange)
+    def getsize(self):
+        return self.buffer.bufferSize
 
 class DrawlibOut():
     def __init__(self,mode=None,overwWidth=None,overwHeight=None,buffIChar=None,buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,wi=None,hi=None,autoLink=False):
@@ -552,6 +567,9 @@ class DrawlibOut():
     def fill(self,st=str,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
         if self.linked == None: self._link()
         self.linked.fill(st,baseColor,palette,xRange=xRange,yRange=yRange)
+    def getsize(self):
+        if self.linked == None: self._link()
+        return self.linked.getsize()
 # endregion
 
 # region draw functions
