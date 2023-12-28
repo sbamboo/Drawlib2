@@ -1,37 +1,11 @@
 from core import vw,vh,ConsoleOutput,CellOpOutofBounds
-from linedraw import draw_point
+from linedraw import draw_point,draw_line
 from coloring import TextObj,DrawlibStdPalette
 from libs.conUtils import getConSize,setConSize,clear,pause
 from pointGroupAlgorithms import beethams_line_algorithm
+from core import base_mdraw
 
 import os,time
-
-def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,xCap=None,yCap=None):
-    '''Uses a drawlib-output object to draw on each coord-pair in coords list.'''
-    valid = True
-    try:
-        if output.validForBase != True:
-            valid = False
-    except: valid = False
-    if valid == False: raise InvalidOutputObj()
-    for coord in coords:
-        x = coord[0]
-        y = coord[1]
-        if xCap != None:
-            if x < xCap[0] or x > xCap[1]:
-                return
-        if yCap != None:
-            if y < yCap[0] or y > yCap[1]:
-                return
-        output.put(x,y,st,baseColor,palette)
-    try:
-        if output.mode != "Console":
-            output.draw(drawNc,baseColor,palette)
-    except AttributeError(): pass
-
-def draw_line(st=str,x1=int,y1=int,x2=int,y2=int, output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,xCap=None,yCap=None):
-    coords = beethams_line_algorithm(x1,y1,x2,y2)
-    base_mdraw(st,coords,output,baseColor,palette,drawNc,xCap,yCap)
 
 def draw_info(width,height,cw,ch,output,stripAnsi,draw_cross=True):
     if ch < 15 or cw < 56:

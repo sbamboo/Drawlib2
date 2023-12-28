@@ -600,7 +600,7 @@ def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStd
             output.draw(drawNc,baseColor,palette)
     except AttributeError(): pass
 
-def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
     '''Uses a drawlib-output object to draw on each coord-pair in coords list.'''
     valid = True
     try:
@@ -614,7 +614,7 @@ def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibSt
             output.draw(drawNc,baseColor,palette)
     except AttributeError(): pass
 
-def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
     '''Uses a drawlib-output object to draw on each cell.'''
     valid = True
     try:
@@ -624,11 +624,11 @@ def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,draw
     if valid == False: raise InvalidOutputObj()
     output.fill(st,baseColor,palette)
     try:
-        if output.mode != "Console":
+        if output.mode != "Console" and supressDraw != True:
             output.draw(drawNc,baseColor,palette)
     except AttributeError(): pass
 
-def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
     '''Uses a drawlib-output to draw a texture.'''
     # Validate output obj
     valid = True
@@ -659,7 +659,7 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseCol
         c += 1
     # If not mode=console then draw
     try:
-        if output.mode != "Console":
+        if output.mode != "Console" and supressDraw != True:
             output.draw(drawNc,baseColor,palette)
     except AttributeError(): pass
 # endregion

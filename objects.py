@@ -53,9 +53,9 @@ class drawlibObj():
         if self.splitPixelGroup == None: self.make()
         return {"ch":self.splitPixelGroup.chars,"po":self.pixels}
     # Draw
-    def draw(self,output=None,drawNc=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False):
         if self.splitPixelGroup == None: self.make()
-        self.splitPixelGroup.draw(output,drawNc)
+        self.splitPixelGroup.draw(output,drawNc,supressDraw=False)
         return self
 
 # Template object for custom generator function to be added by user
@@ -286,9 +286,9 @@ class assetFileObj():
         if self.spriteObj == None: self.make()
         cmpxPixelGroup = sprite_to_cmpxPixelGroup(self.sprite,exclusionChar)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False):
         if self.spriteObj == None: self.make()
-        self.spriteObj.draw(output,drawNc)
+        self.spriteObj.draw(output,drawNc,supressDraw=supressDraw)
         return self
     
 class assetTexture():
@@ -335,10 +335,10 @@ class assetTexture():
         sprite = self.textureObj.asSprite(xPos,yPos)
         cmpxPixelGroup = sprite_to_cmpxPixelGroup(sprite,exclusionChar)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,xPos=0,yPos=0,output=None,drawNc=False):
+    def draw(self,xPos=0,yPos=0,output=None,drawNc=False,supressDraw=False):
         if self.posov != None:
             xPos = self.posov[0]
             yPos = self.posov[1]
         if self.textureObj == None: self.make()
-        self.textureObj.draw(xPos,yPos,output,drawNc)
+        self.textureObj.draw(xPos,yPos,output,drawNc,supressDraw=supressDraw)
         return self

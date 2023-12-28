@@ -145,22 +145,22 @@ def sprite_to_texture(sprite):
 
 
 # [Functions Render]
-def render_pixelGroup(char,data_pixelGroup,output=object,baseColor=None,palette=None,drawNc=False):
+def render_pixelGroup(char,data_pixelGroup,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Draw points
-    base_mdraw(char,data_pixelGroup,output,baseColor,palette,drawNc)
+    base_mdraw(char,data_pixelGroup,output,baseColor,palette,drawNc,supressDraw=supressDraw)
 
-def render_cmpxPixelGroup(data_cmpxPixelGroup,output=object,baseColor=None,palette=None,drawNc=False):
+def render_cmpxPixelGroup(data_cmpxPixelGroup,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Get points and draw them
     for pixel in data_cmpxPixelGroup:
         char = pixel["char"]
         pos = pixel["pos"]
-        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc)
+        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc,supressDraw=supressDraw)
 
-def render_splitPixelGroup(data_splitPixelGroup=dict,output=object,baseColor=None,palette=None,drawNc=False):
+def render_splitPixelGroup(data_splitPixelGroup=dict,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Get points and draw them
     for i,pos in enumerate(data_splitPixelGroup["po"]):
         char = data_splitPixelGroup["ch"][i]
-        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc)
+        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc,supressDraw=supressDraw)
 
 def render_texture(xPos=0,yPos=0,data_texture=str,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Convert to sprite and render
@@ -186,7 +186,6 @@ def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc
         c += 1
     #print("\033[u\033[2A") # Load cursorPos
 
-
 # [Classes]
 # Theese classes are to allow more methods and conversions to bee avaliable between the dataTypes using the functions above.
 # And have a few standard methods: asPixelGroup, asCmpxPixelGroup, asSprite, asTexture, draw
@@ -211,11 +210,11 @@ class pixelGroup():
     def asSplitPixelGroup(self):
         cmpxPixelGroup = pixelGroup_to_cmpxPixelGroup(self.char,self.pixels)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_pixelGroup(self.char,self.pixels,output,self.baseColor,self.palette,drawNc)
+        render_pixelGroup(self.char,self.pixels,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
     
 class cmpxPixelGroup():
     def __init__(self,data_cmpxPixelGroup=list, baseColor=None,palette=None,output=None):
@@ -234,11 +233,11 @@ class cmpxPixelGroup():
         return sprite["xPos"],sprite["yPos"],sprite_to_texture(sprite)
     def asSplitPixelGroup(self):
         return cmpxPixelGroup_to_splitPixelGroup(self.data_cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_cmpxPixelGroup(self.data_cmpxPixelGroup,output,self.baseColor,self.palette,drawNc)
+        render_cmpxPixelGroup(self.data_cmpxPixelGroup,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
 
 class sprite():
     def __init__(self,xPos=None,yPos=None,spriteTexture=None,sprite=None, baseColor=None,palette=None,output=None):
@@ -262,11 +261,11 @@ class sprite():
     def asSplitPixelGroup(self,exclusionChar=" "):
         cmpxPixelGroup = sprite_to_cmpxPixelGroup(self.sprite, exclusionChar)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_sprite(self.sprite,output,self.baseColor,self.palette,drawNc)
+        render_sprite(self.sprite,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
 
 class texture():
     def __init__(self,data_texture=str, baseColor=None,palette=None,output=None):
@@ -288,11 +287,11 @@ class texture():
         sprite = texture_to_sprite(xPos=xPos,yPos=yPos,texture=self.data_texture)
         cmpxPixelGroup = sprite_to_cmpxPixelGroup(sprite, exclusionChar)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,xPos=0,yPos=0,output=None,drawNc=False):
+    def draw(self,xPos=0,yPos=0,output=None,drawNc=False,supressDraw=False):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_texture(xPos,yPos,self.data_texture,output,self.baseColor,self.palette,drawNc)
+        render_texture(xPos,yPos,self.data_texture,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
 
 class splitPixelGroup():
     def __init__(self,chars=None,positions=None,splitPixelGroup=None, baseColor=None,palette=None,output=None):
@@ -323,8 +322,8 @@ class splitPixelGroup():
         return sprite["xPos"],sprite["yPos"],sprite_to_texture(sprite)
     def asSplitPixelGroup(self):
         return {"ch":self.chars,"po":self.positions}
-    def draw(self,output=None,drawNc=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_splitPixelGroup({"ch":self.chars,"po":self.positions},output,self.baseColor,self.palette,drawNc)
+        render_splitPixelGroup({"ch":self.chars,"po":self.positions},output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)

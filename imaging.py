@@ -149,7 +149,7 @@ class boxImage():
         if yPos == None: raise ValueError("yPos not defined!")
         if self.texture == None: self._getTexture()
         if self.strTxtMethod == True:
-            render_texture(xPos,yPos,self.texture)
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw)
         else:
             render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw)
         return self

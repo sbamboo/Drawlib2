@@ -63,14 +63,14 @@ def toV1frmt(args,posX=None,posY=None,texture=None,color=None,extra=None,comment
 		color = args[3]
 	return posX,posY,texture,color
 
-def render_asset(posX,posY,texture,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+def render_asset(posX,posY,texture,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
     # Use a modified sprite renderer
     #print("\033[s") # Save cursorPos
     c = 0
     OposY = int(posY)
     for line in texture:
         posY = OposY + c
-        base_draw(line,posX,posY,output,baseColor,palette,drawNc)
+        base_draw(line,posX,posY,output,baseColor,palette,drawNc,supressDraw=supressDraw)
         c += 1
     #print("\033[u\033[2A") # Load cursorPos
 
@@ -92,8 +92,8 @@ class asset():
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.posX,self.posY,self.texture,self.color,self.extra,self.comment = load_asset(self.filepath,encoding)
-	def render(self,drawNc=False):
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc)
+	def render(self,drawNc=False,supressDraw=False):
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
 	def asTexture(self):
 		return self.texture
 	def asAsset(self):
@@ -114,8 +114,8 @@ class texture():
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.texture = load_texture(self.filepath,encoding)
-	def render(self,posX=int,posY=int,drawNc=False):
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc)
+	def render(self,posX=int,posY=int,drawNc=False,supressDraw=False):
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
 	def asTexture(self):
 		return self.texture
 	def asAsset(self,posX=int,posY=int,color=None):
