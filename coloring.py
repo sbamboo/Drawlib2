@@ -3,7 +3,38 @@ from libs.stringTags import formatStringTags
 import re
 
 DrawlibStdPalette = {
-
+    "f_Black": "90m",
+    "b_Black": "100m",
+    "f_Red": "91m",
+    "b_Red": "101m",
+    "f_Green": "92m",
+    "b_Green": "102m",
+    "f_Yellow": "93m",
+    "b_Yellow": "103m",
+    "f_Blue": "94m",
+    "b_Blue": "104m",
+    "f_Magenta": "95m",
+    "b_Magenta": "105m",
+    "f_Cyan": "96m",
+    "b_Cyan": "106m",
+    "f_White": "97m",
+    "b_White": "107m",
+    "f_DarkBlack": "30m",
+    "b_DarkBlack": "40m",
+    "f_DarkRed": "31m",
+    "b_DarkRed": "41m",
+    "f_DarkGreen": "32m",
+    "b_DarkGreen": "42m",
+    "f_DarkYellow": "33m",
+    "b_DarkYellow": "43m",
+    "f_DarkBlue": "34m",
+    "b_DarkBlue": "44m",
+    "f_DarkMagenta": "35m",
+    "b_DarkMagenta": "45m",
+    "f_DarkCyan": "36m",
+    "b_DarkCyan": "46m",
+    "f_DarkWhite": "37m",
+    "b_DarkWhite": "47m"
 }
 
 def removeAnsiSequences(inputString):
@@ -28,7 +59,7 @@ def autoNoneColor(color,palette):
                 val = val.replace("#","")
                 lv = len(val)
                 rgb = [int(val[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)]
-                val = '{};2;{};{};{}'.format(48 if background else 38, rgb[0],rgb[1],rgb[2])
+                val = '{};2;{};{};{}'.format(48 if background else 38, rgb[0],rgb[1],rgb[2]) + "m"
             else:
                 return val
 

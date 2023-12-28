@@ -1,5 +1,5 @@
 from types import MethodType
-from libs.conUtils import clear,getConSize,setConSize
+from libs.conUtils import clear,getConSize,setConSize,pause
 from terminal import draw
 from coloring import removeAnsiSequences,TextObj,DrawlibStdPalette,autoNoneColor
 import json,os
@@ -586,7 +586,7 @@ def base_croutput(overwWidth=None,overwHeight=None,mode="Console",buffIChar=" ",
         outputObj=outputObj
     )
 
-def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False):
+def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
     '''Uses a drawlib-output object to draw on x,y.'''
     valid = True
     try:
@@ -596,7 +596,7 @@ def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStd
     if valid == False: raise InvalidOutputObj()
     output.put(x,y,st,baseColor,palette)
     try:
-        if output.mode != "Console":
+        if output.mode != "Console" and supressDraw != True:
             output.draw(drawNc,baseColor,palette)
     except AttributeError(): pass
 

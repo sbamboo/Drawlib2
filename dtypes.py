@@ -162,16 +162,16 @@ def render_splitPixelGroup(data_splitPixelGroup=dict,output=object,baseColor=Non
         char = data_splitPixelGroup["ch"][i]
         base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc)
 
-def render_texture(xPos=0,yPos=0,data_texture=str,output=object,baseColor=None,palette=None,drawNc=False):
+def render_texture(xPos=0,yPos=0,data_texture=str,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Convert to sprite and render
     sprite = texture_to_sprite(data_texture,xPos,yPos)
-    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc)
-def render_listTexture(xPos=0,yPos=0,data_texture=list,output=object,baseColor=None,palette=None,drawNc=False):
+    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc,supressDraw=supressDraw)
+def render_listTexture(xPos=0,yPos=0,data_texture=list,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Convert to sprite and render
     sprite = listTexture_to_sprite(data_texture,xPos,yPos)
-    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc)
+    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc,supressDraw=supressDraw)
 
-def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc=False):
+def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
     # Get sprite data
     texture = spriteTexture["tx"]
     xPos = spriteTexture["xPos"]
@@ -182,7 +182,7 @@ def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc
     OposY = int(yPos)
     for line in texture:
         yPos = OposY + c
-        base_draw(line,xPos,yPos,output,baseColor,palette,drawNc)
+        base_draw(line,xPos,yPos,output,baseColor,palette,drawNc,supressDraw=supressDraw)
         c += 1
     #print("\033[u\033[2A") # Load cursorPos
 
