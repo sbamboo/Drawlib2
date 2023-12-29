@@ -5,8 +5,8 @@
         "name":    "ImageRenderer",
         "desc":    "Image cli renderer made in python.",
         "version": "2.1",
-        "vid":     "1",
-        "release": "Nan",
+        "vid":     "3",
+        "release": "2023-08-17",
         "changelog": "Added alpha support for boxMode",
         "author":  "Simon Kalmi Claesson",
         "dependencies": []
