@@ -39,3 +39,28 @@ def draw(x,y,st,ansicode=None):
   reset_cursor_code = "\033[H"
   # Print the move cursor code, the text, and reset cursor code
   print(move_cursor_code + st + reset_cursor_code, end='', flush=True)
+
+def inputAtPos(x,y,st,ansicode=None,savePos=False):
+  st = str(st)
+  if ansicode != None:
+    if "\033[" in ansicode:
+      st = ansicode + st
+    else:
+      st = f"\033[{ansicode}" + st
+  # ANSI escape code for moving the cursor to a specific position
+  move_cursor_code = f"\033[{y};{x}H"
+  # ANSI escape code for resetting the cursor position
+  reset_cursor_code = "\033[H"
+  # Print the move cursor code, the text, and reset cursor code
+  if savePos == True:
+    print("\033[s")
+    print(move_cursor_code)
+    _str = st
+  else:
+    _str = move_cursor_code + st
+  res = input(_str)
+  if savePos == True:
+    print("\033[u\033[2A")
+  else:
+    print(reset_cursor_code, end='', flush=True)
+  return res

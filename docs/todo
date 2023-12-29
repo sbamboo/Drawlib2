@@ -1,1 +1,4 @@
+ - fix so drawlib(v2) uses the same relative-package imports as in drawlib(v1)
  - refactor drawlib to have render/draw and put functions not render/draw with supressDraw for the top-level things like linedraw/objects etc, in an attempt to be more descriptive
+ - Check if generators works
+ - Check if manip works
