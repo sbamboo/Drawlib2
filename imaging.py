@@ -66,7 +66,7 @@ class asciiImage():
             return len(list(removeAnsiSequences(lines[0]))),len(lines)
         else:
             return len(list(removeAnsiSequences(self.texture[0]))),len(self.texture)
-    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,supressDraw=False):
+    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None: output = self.output
         if xPos == None: xPos = self.xPos
         if xPos == None: raise ValueError("xPos not defined!")
@@ -74,9 +74,9 @@ class asciiImage():
         if yPos == None: raise ValueError("yPos not defined!")
         if self.texture == None: self._getTexture()
         if self.strTxtMethod == True:
-            render_texture(xPos,yPos,self.texture)
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
         else:
-            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw)
+            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
         return self
 
 class boxImage():
@@ -141,7 +141,7 @@ class boxImage():
             return len(list(removeAnsiSequences(lines[0]))),len(lines)
         else:
             return len(list(removeAnsiSequences(self.texture[0]))),len(self.texture)
-    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,supressDraw=False):
+    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None: output = self.output
         if xPos == None: xPos = self.xPos
         if xPos == None: raise ValueError("xPos not defined!")
@@ -149,8 +149,8 @@ class boxImage():
         if yPos == None: raise ValueError("yPos not defined!")
         if self.texture == None: self._getTexture()
         if self.strTxtMethod == True:
-            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw)
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
         else:
-            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw)
+            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
         return self
         

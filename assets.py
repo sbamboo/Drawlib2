@@ -1,5 +1,6 @@
 from core import base_draw
 from coloring import DrawlibStdPalette
+from tools import clampTX,check_clampTX
 
 # ============================[DrawlibV1/DrawlibV2 assets format]============================
 # De tokenising function (Variables in string surrounded by %)
@@ -63,7 +64,13 @@ def toV1frmt(args,posX=None,posY=None,texture=None,color=None,extra=None,comment
 		color = args[3]
 	return posX,posY,texture,color
 
-def render_asset(posX,posY,texture,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
+def render_asset(posX,posY,texture,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+    '''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
+    if excludeClamped == True:
+        if check_clampTX(xPos,yPos,texture,clamps) == False and clamps != None:
+            return
+    else:
+        texture = clampTX(xPos,yPos,texture,clamps)
     # Use a modified sprite renderer
     #print("\033[s") # Save cursorPos
     c = 0
@@ -92,8 +99,9 @@ class asset():
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.posX,self.posY,self.texture,self.color,self.extra,self.comment = load_asset(self.filepath,encoding)
-	def render(self,drawNc=False,supressDraw=False):
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+	def render(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 	def asTexture(self):
 		return self.texture
 	def asAsset(self):
@@ -114,8 +122,9 @@ class texture():
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.texture = load_texture(self.filepath,encoding)
-	def render(self,posX=int,posY=int,drawNc=False,supressDraw=False):
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+	def render(self,posX=int,posY=int,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 	def asTexture(self):
 		return self.texture
 	def asAsset(self,posX=int,posY=int,color=None):

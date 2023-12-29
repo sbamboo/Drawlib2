@@ -1,4 +1,5 @@
 from types import MethodType
+from tools import clampToRanges,check_clamp,clampS,check_clampM,clampM,clampTX,check_clampTX
 from libs.conUtils import clear,getConSize,setConSize,pause
 from terminal import draw
 from coloring import removeAnsiSequences,TextObj,DrawlibStdPalette,autoNoneColor
@@ -307,7 +308,7 @@ class Output():
         raise UnfinishedMethod()
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
         raise UnfinishedMethod()
-    def draw(self,x=int,y=int,nc=False,baseColor=None,palette=None,xRange=None,yRange=None):
+    def draw(self,x=int,y=int,nc=False,baseColor=None,palette=None,xRange=None,yRange=None,clamps=None):
         raise UnfinishedMethod()
     def mPut(self,coords=list,st=str,baseColor=None,palette=None):
         for pair in coords:
@@ -340,7 +341,9 @@ class BufferOutput(Output):
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
         # put
         self.buffer.put(x,y,st=inp)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):
+        '''Giving clamps will overwrite ranges.'''
+        if clamps != None: xRange,yRange = clampToRanges(clamps[0],clamps[1])
         self.buffer.draw(nc,baseColor,palette,xRange=xRange,yRange=yRange)
         print("\033[0m")
     def getBuf(self,retEmpty=False):
@@ -434,7 +437,9 @@ class HybridOutput(Output):
         baseColor = autoNoneColor(baseColor,palette)
         if skpBuf != True: self.buffer.put(x,y,st=inp)
         draw(x,y,inp,baseColor)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):
+        '''Giving clamps will overwrite ranges.'''
+        if clamps != None: xRange,yRange = clampToRanges(clamps[0],clamps[1])
         self.buffer.draw(nc,baseColor,xRange=xRange,yRange=yRange)
     def clearCon(self):
         clear()
@@ -489,7 +494,9 @@ class ChannelOutput(Output):
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
         # put
         self.buffer.put(x,y,st=inp)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):
+        '''Giving clamps will overwrite ranges.'''
+        if clamps != None: xRange,yRange = clampToRanges(clamps[0],clamps[1])
         ostr = self.buffer.copyStr(xRange,yRange)
         self.channelClassInstance.send(ostr)
     def getBuf(self,retEmpty=False):
@@ -552,9 +559,9 @@ class DrawlibOut():
     def put(self,x,y,st,baseColor=None,palette=DrawlibStdPalette):
         if self.linked == None: self._link()
         self.linked.put(x,y,st,baseColor=baseColor,palette=palette)
-    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):
         if self.linked == None: self._link()
-        self.linked.draw(nc=nc,baseColor=baseColor,palette=palette,xRange=xRange,yRange=yRange)
+        self.linked.draw(nc=nc,baseColor=baseColor,palette=palette,xRange=xRange,yRange=yRange,clamps=clamps)
     def clear(self):
         if self.linked == None: self._link()
         self.linked.clear()
@@ -586,7 +593,7 @@ def base_croutput(overwWidth=None,overwHeight=None,mode="Console",buffIChar=" ",
         outputObj=outputObj
     )
 
-def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
+def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output object to draw on x,y.'''
     valid = True
     try:
@@ -594,13 +601,18 @@ def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStd
             valid = False
     except: valid = False
     if valid == False: raise InvalidOutputObj()
+    if excludeClamped == True:
+        if check_clamp((x,y),clamps) == False:
+            return
+    else:
+        x,y = clampS(x,y,c=clamps)
     output.put(x,y,st,baseColor,palette)
     try:
         if output.mode != "Console" and supressDraw != True:
-            output.draw(drawNc,baseColor,palette)
+            output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
     except AttributeError(): pass
 
-def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
+def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output object to draw on each coord-pair in coords list.'''
     valid = True
     try:
@@ -608,13 +620,18 @@ def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibSt
             valid = False
     except: valid = False
     if valid == False: raise InvalidOutputObj()
+    if excludeClamped == True:
+        if check_clampM(coords,clamps) == False:
+            return
+    else:
+        coords = clampM(coords,clamps)
     output.mPut(coords,st,baseColor,palette)
     try:
         if output.mode != "Console":
-            output.draw(drawNc,baseColor,palette)
+            output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
     except AttributeError(): pass
 
-def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
+def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output object to draw on each cell.'''
     valid = True
     try:
@@ -625,10 +642,10 @@ def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,draw
     output.fill(st,baseColor,palette)
     try:
         if output.mode != "Console" and supressDraw != True:
-            output.draw(drawNc,baseColor,palette)
+            output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
     except AttributeError(): pass
 
-def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False):
+def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output to draw a texture.'''
     # Validate output obj
     valid = True
@@ -644,7 +661,13 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseCol
         raise FileNotFoundError(f"Drawlib: Texture file not found! '{textureFile}'")
     # Split the rawContent into lines of text
     spriteLines = rawContent.split('\n')
-    # Render the texture at the tl-coords:
+    # Clamp check
+    if excludeClamped == True:
+        if check_clampTX(tlCoordX,tlCoordY,spriteLines,clamps) == False and clamps != None:
+            return
+    else:
+        spriteLines = clampTX(tlCoordX,tlCoordY,spriteLines,clamps)
+    # get the texture at the tl-coords:
     c = 0 # Set incr-counter to 0
     orgScreenCoordY = int(tlCoordY) # Save the original y-coord
     for line in spriteLines: # iterate through the lines
@@ -660,6 +683,6 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseCol
     # If not mode=console then draw
     try:
         if output.mode != "Console" and supressDraw != True:
-            output.draw(drawNc,baseColor,palette)
+            output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
     except AttributeError(): pass
 # endregion

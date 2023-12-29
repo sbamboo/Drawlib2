@@ -1,6 +1,7 @@
 # [Imports]
 from core import base_draw,base_mdraw,NoOutput
 from coloring import autoNoneColor,DrawlibStdPalette
+from tools import check_clampTX,clampTX
 
 # [Functions Tools]
 def _join_with_delimiter(strings, delimiter):
@@ -145,37 +146,43 @@ def sprite_to_texture(sprite):
 
 
 # [Functions Render]
-def render_pixelGroup(char,data_pixelGroup,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
+def render_pixelGroup(char,data_pixelGroup,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     # Draw points
-    base_mdraw(char,data_pixelGroup,output,baseColor,palette,drawNc,supressDraw=supressDraw)
+    base_mdraw(char,data_pixelGroup,output,baseColor,palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
-def render_cmpxPixelGroup(data_cmpxPixelGroup,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
+def render_cmpxPixelGroup(data_cmpxPixelGroup,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     # Get points and draw them
     for pixel in data_cmpxPixelGroup:
         char = pixel["char"]
         pos = pixel["pos"]
-        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc,supressDraw=supressDraw)
+        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
-def render_splitPixelGroup(data_splitPixelGroup=dict,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
+def render_splitPixelGroup(data_splitPixelGroup=dict,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     # Get points and draw them
     for i,pos in enumerate(data_splitPixelGroup["po"]):
         char = data_splitPixelGroup["ch"][i]
-        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc,supressDraw=supressDraw)
+        base_draw(char,pos[0],pos[1],output,baseColor,palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
-def render_texture(xPos=0,yPos=0,data_texture=str,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
+def render_texture(xPos=0,yPos=0,data_texture=str,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     # Convert to sprite and render
     sprite = texture_to_sprite(data_texture,xPos,yPos)
-    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc,supressDraw=supressDraw)
-def render_listTexture(xPos=0,yPos=0,data_texture=list,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
+    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+def render_listTexture(xPos=0,yPos=0,data_texture=list,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     # Convert to sprite and render
     sprite = listTexture_to_sprite(data_texture,xPos,yPos)
-    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc,supressDraw=supressDraw)
+    render_sprite(sprite,output=output,baseColor=baseColor,palette=palette,drawNc=drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
-def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False):
+def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     # Get sprite data
     texture = spriteTexture["tx"]
     xPos = spriteTexture["xPos"]
     yPos = spriteTexture["yPos"]
+    # Clamp check
+    if excludeClamped == True:
+        if check_clampTX(xPos,yPos,texture,clamps) == False and clamps != None:
+            return
+    else:
+        texture = clampTX(xPos,yPos,texture,clamps)
     # Use a modified sprite renderer
     #print("\033[s") # Save cursorPos
     c = 0
@@ -210,11 +217,11 @@ class pixelGroup():
     def asSplitPixelGroup(self):
         cmpxPixelGroup = pixelGroup_to_cmpxPixelGroup(self.char,self.pixels)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False,supressDraw=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_pixelGroup(self.char,self.pixels,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+        render_pixelGroup(self.char,self.pixels,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
     
 class cmpxPixelGroup():
     def __init__(self,data_cmpxPixelGroup=list, baseColor=None,palette=None,output=None):
@@ -233,11 +240,11 @@ class cmpxPixelGroup():
         return sprite["xPos"],sprite["yPos"],sprite_to_texture(sprite)
     def asSplitPixelGroup(self):
         return cmpxPixelGroup_to_splitPixelGroup(self.data_cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False,supressDraw=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_cmpxPixelGroup(self.data_cmpxPixelGroup,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+        render_cmpxPixelGroup(self.data_cmpxPixelGroup,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
 class sprite():
     def __init__(self,xPos=None,yPos=None,spriteTexture=None,sprite=None, baseColor=None,palette=None,output=None):
@@ -261,11 +268,11 @@ class sprite():
     def asSplitPixelGroup(self,exclusionChar=" "):
         cmpxPixelGroup = sprite_to_cmpxPixelGroup(self.sprite, exclusionChar)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,output=None,drawNc=False,supressDraw=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_sprite(self.sprite,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+        render_sprite(self.sprite,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
 class texture():
     def __init__(self,data_texture=str, baseColor=None,palette=None,output=None):
@@ -287,11 +294,11 @@ class texture():
         sprite = texture_to_sprite(xPos=xPos,yPos=yPos,texture=self.data_texture)
         cmpxPixelGroup = sprite_to_cmpxPixelGroup(sprite, exclusionChar)
         return cmpxPixelGroup_to_splitPixelGroup(cmpxPixelGroup)
-    def draw(self,xPos=0,yPos=0,output=None,drawNc=False,supressDraw=False):
+    def draw(self,xPos=0,yPos=0,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_texture(xPos,yPos,self.data_texture,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+        render_texture(xPos,yPos,self.data_texture,output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
 
 class splitPixelGroup():
     def __init__(self,chars=None,positions=None,splitPixelGroup=None, baseColor=None,palette=None,output=None):
@@ -322,8 +329,8 @@ class splitPixelGroup():
         return sprite["xPos"],sprite["yPos"],sprite_to_texture(sprite)
     def asSplitPixelGroup(self):
         return {"ch":self.chars,"po":self.positions}
-    def draw(self,output=None,drawNc=False,supressDraw=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if output == None:
             if self.output == None: raise NoOutput()
             else: output = self.output
-        render_splitPixelGroup({"ch":self.chars,"po":self.positions},output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw)
+        render_splitPixelGroup({"ch":self.chars,"po":self.positions},output,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)

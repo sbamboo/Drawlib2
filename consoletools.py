@@ -44,26 +44,28 @@ def draw_info(width,height,cw,ch,output,stripAnsi,draw_cross=True):
             try:
                 capW = min(cw,width)
                 capH = min(ch,height)
+                clamps = [[0,capW],[0,capH]]
                 # draw info
-                draw_point(note,0,round(height/2)-1, output,drawNc=True)
-                draw_point(info,0,round(height/2), output,drawNc=True)
+                draw_point(note,0,round(height/2)-1, output,drawNc=True,supressDraw=True)
+                draw_point(info,0,round(height/2), output,drawNc=True,supressDraw=True)
                 # draw cross
                 if draw_cross == True:
-                    draw_line(cross, 2,2, width-2,height-1, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                    draw_line(cross, 2,height-1, width-2,2, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
+                    draw_line(cross, 2,2, width-2,height-1, output, clamps=clamps,drawNc=True,supressDraw=True)
+                    draw_line(cross, 2,height-1, width-2,2, output, clamps=clamps,drawNc=True,supressDraw=True)
                 # draw corners
-                draw_line(corner, 0,0, 5,0, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, 0,0, 0,2, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, width-5,0, width,0, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, width,0, width,2, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, 0,height, 5,height, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, 0,height, 0,height-2, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, width-5,height, width,height, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
-                draw_line(corner, width,height, width,height-2, output, xCap=[0,capW],yCap=[0,capH],drawNc=True)
+                draw_line(corner, 0,0, 5,0, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, 0,0, 0,2, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, width-5,0, width,0, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, width,0, width,2, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, 0,height, 5,height, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, 0,height, 0,height-2, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, width-5,height, width,height, output, clamps=clamps,drawNc=True,supressDraw=True)
+                draw_line(corner, width,height, width,height-2, output, clamps=clamps,drawNc=True,supressDraw=True)
                 # draw info
-                draw_point(note,0,round(height/2)-1, output,drawNc=True)
-                draw_point(info,0,round(height/2), output,drawNc=True)
+                draw_point(note,0,round(height/2)-1, output,drawNc=True,supressDraw=True)
+                draw_point(info,0,round(height/2), output,drawNc=True,supressDraw=True)
             except CellOpOutofBounds: pass
+            output.draw()
 
 def sizeAssist(width=int,height=int,output=object,stripAnsi=False,updateDelaySec=0.1):
     try:

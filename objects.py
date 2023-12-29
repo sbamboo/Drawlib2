@@ -53,9 +53,9 @@ class drawlibObj():
         if self.splitPixelGroup == None: self.make()
         return {"ch":self.splitPixelGroup.chars,"po":self.pixels}
     # Draw
-    def draw(self,output=None,drawNc=False,supressDraw=False):
+    def draw(self,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
         if self.splitPixelGroup == None: self.make()
-        self.splitPixelGroup.draw(output,drawNc,supressDraw=False)
+        self.splitPixelGroup.draw(output,drawNc,supressDraw=False,clamps=clamps,excludeClamped=excludeClamped)
         return self
 
 # Template object for custom generator function to be added by user
