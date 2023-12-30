@@ -37,6 +37,8 @@ class Clearer():
         if create == True and self.gottenBuffer != None:
             # check if y-major can be assumed
                 # create 
+
+                
     def _getBuffer(self):
         buffer = None
         # check if output obj or single
