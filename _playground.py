@@ -35,6 +35,8 @@ globals()['__import__'] = RaisingDummyObject()
 print = _print
 exit = _exit
 
+width = os.get_terminal_size()[0]
+
 x,y = 0,os.get_terminal_size()[1]
 prefix = "Drawlib > "
 
@@ -43,17 +45,22 @@ clear()
 
 print("Welcome to drawlib playground!")
 print("Press ENTER to contine and once inside write 'exit()' to exit.")
-print("-"*os.get_terminal_size()[0])
+print("-"*width)
 if input("> ") == "exit()": exit()
 clear()
 
 while True:
+    reset_write_head()
     debug = False
     try:
+        draw(x,y," "*width)
         _inp = inputAtPos(x,y,prefix)
         if "deb:" in _inp:
             debug = True
             _inp = _inp.replace("deb:","").strip()
+        if "clr:" in _inp:
+            clear()
+            _inp = _inp.replace("clr:","").strip()
     except KeyboardInterrupt: exit()
     try: exec(_inp)
     except Exception as e:
