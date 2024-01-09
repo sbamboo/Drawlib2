@@ -293,6 +293,199 @@ class Buffer():
                 for xi in range(self.bufferSize[0]):
                     self.put(xi,y,st)
 
+class BufferCachedClear():
+    def __init__(self,width,height,fallbackChar=" ",autoStr=True):
+        if height == "vh" or isinstance(height,MethodType): height = int(getConSize()[-1])
+        if width == "vw" or isinstance(width,MethodType): width = int(getConSize()[0])
+        if type(width) != int:
+            width = max(width)+1
+        if type(height) != int:
+            height = max(height)+1
+        self.bufferSize = (width,height)
+        self.buffer = None
+        self.fallbackChar = fallbackChar
+        self.autoStr = autoStr
+        self.cache = None
+    def _cacheContent(self):
+        self.cache = self.buffer.copy()
+    def isCreated(self):
+        if self.buffer == None:
+            return False
+        else:
+            return True
+    def isOutOfBoundsX(self,x):
+        if x < 0 or x > self.bufferSize[0]: return True
+        else: return False
+    def isOutOfBoundsY(self,y):
+        if y < 0 or y > self.bufferSize[1]: return True
+        else: return False
+    def anyOutOfBounds(self,xs=[],ys=[]):
+        for x in xs:
+            if self.isOutOfBoundsX(x):
+                raise CellOpOutofBounds()
+        for y in ys:
+            if self.isOutOfBoundsY(y):
+                raise CellOpOutofBounds()
+    def create(self):
+        if self.isCreated() == False:
+            self._cacheClear()
+    def _cacheClear(self):
+        self.buffer = {}
+        for y in range(self.bufferSize[1]):
+            self.buffer[y] = {}
+        self._cacheContent()
+    def destroy(self):
+        if self.isCreated() == True:
+            self.buffer = None
+    def clear(self):
+        if self.isCreated() == True:
+            if self.cache == None:
+                self._cacheClear()
+            else:
+                self.buffer = self.cache
+        else:
+            raise UncreatedBuffer()
+    def put(self,x,y,st):
+        self.anyOutOfBounds([x],[y])
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # put
+        if self.autoStr == True: st = str(st)
+        try:
+            self.buffer[y][x] = st
+        except KeyError:
+            if self.buffer.get(y) == None:
+                self.buffer[y] = {}
+            self.buffer[y][x] = st
+    def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None):
+        baseColor = autoNoneColor(baseColor,palette)
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(range(0,self.bufferSize[0]+1)), list(range(0,self.bufferSize[1]+1)))
+        # Clear
+        if nc == False: clear()
+        # draw sectioned
+        if section == True:
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    xKeys = list(self.buffer[y].keys())
+                    for x in xRange:
+                        if x in xKeys:
+                            v = self.buffer[y].get(x)
+                            if v == "" or v == None: v = self.fallbackChar
+                            draw(x,y,v,baseColor)
+        # draw un-sectioned
+        else:
+            for y in self.buffer:
+                for x in self.buffer[y]:
+                    v = self.buffer[y].get(x)
+                    if v == "" or v == None: v = self.fallbackChar
+                    draw(x,y,v,baseColor)
+    def putDelim(self,x,y,st,delim=";"):
+        self.anyOutOfBounds([x],[y])
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # put
+        if len(delim) > 1:
+            raise DelimToLong()
+        st = st.replace(f"\\{delim}","§delim§")
+        sst = st.split(delim)
+        for i,p in enumerate(sst):
+            sst[i] == p.replace("§delim§",delim)
+        ln = len(st)
+        for i in range(ln):
+            self.put(x+i,y,sst[i])
+    def putCharList(self,x,y,li=list):
+        self.anyOutOfBounds([x],[y])
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # put
+        ln = len(li)
+        for i in range(ln):
+            self.put(x+i,y,sst[i])
+    def _toStr(self,autoStr=False) -> dict:
+        data = {}
+        for y in self.buffer:
+            data[y] = {}
+            for x in self.buffer[y]:
+                v = self.buffer[y][x]
+                if isinstance(v, TextObj) and autoStr == False:
+                    v = v.exprt()
+                    v["tag"] = 1
+                else:
+                    v = str(v)
+                data[y][x] = v
+        return data
+    def exportF(self) -> str:
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # exprt
+        return json.dumps(self._toStr())
+    def importF(self,jsonStr,encoding="utf-8"):
+        data = json.loads(jsonStr)
+        for y in data:
+            for x in data[y]:
+                if isinstance(data[y][x], dict):
+                    idata = data[y][x]
+                    data[y][x] = TextObj("")
+                    data[y][x].imprt(idata)
+        self._cacheClear()
+        self.buffer = data
+    def getStrLines(self,xRange=None,yRange=None):
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(self.buffer[0].keys()), list(self.buffer.keys()))
+        # get sectioned
+        if section == True:
+            lines = []
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    lines.append("")
+                    xKeys = list(self.buffer[y].keys())
+                    for x in xRange:
+                        if x in xKeys:
+                            lines[y] += self.buffer[y][x]
+            return lines
+        # get un-sectioned
+        else:
+            lines = []
+            for y in self.buffer:
+                lines.append("")
+                for x in self.buffer[y]:
+                    lines[y] += self.buffer[y][x]
+            return lines
+    def copyStr(self,xRange=None,yRange=None):
+        lines = self.getStrLines(xRange,yRange)
+        return '\n'.join(lines)
+    def fill(self,st=str,xRange=None,yRange=None):
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(range(0,self.bufferSize[0]+1)), list(self.buffer.keys()))
+        # Sectioned
+        if section == True:
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    for x in xRange:
+                        self.put(x,y,st)                    
+        # Un-Sectioned
+        else:
+            for y in self.buffer:
+                for xi in range(self.bufferSize[0]):
+                    self.put(xi,y,st)
+
 class Output():
     def __init__(self,width=None,height=None,name="Drawlib.Buffer.Generic"):
         if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]

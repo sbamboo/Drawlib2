@@ -6,7 +6,7 @@ from pointGroupAlgorithms import *
 
 # Base-class to inherit from. Contains pixelGenerator and objectcreator
 class drawlibObj():
-    def __init__(self,charset, output=object,baseColor=None,palette=DrawlibStdPalette, charFunc=baseGenerator):
+    def __init__(self,charset, output=object,baseColor=None,palette=DrawlibStdPalette, charFunc=baseGenerator, generateArgs=None,generateKwargs=None):
         if type(charset) == str:
             if ";;" in charset:
                 self.charset = charset.split(";;")
@@ -64,7 +64,7 @@ class drawlibObj():
 #     return [[x,y],[x,y],[x,y]]
 # template._customGenerator = customGenerator
 # template.draw()
-class temlateDrawlibObj(drawlibObj):
+class templateDrawlibObj(drawlibObj):
     def __init__(self,charset, output=object,baseColor=None,palette=DrawlibStdPalette, charFunc=baseGenerator,autoGenerate=False,autoDraw=False,**kwargs):
         super().__init__(charset, output, baseColor, palette, charFunc)
         self.genData = kwargs

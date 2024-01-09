@@ -1,9 +1,10 @@
-from core import DrawlibOut
+from core import DrawlibOut,Buffer,BufferCachedClear
 from terminal import reset_write_head
 from shapes import *
 from coloring import TextObj
 from libs.conUtils import clear
 
+import os
 from time import sleep
 
 def bclear(output=object):
@@ -37,7 +38,7 @@ class Clearer():
         if create == True and self.gottenBuffer != None:
             # check if y-major can be assumed
                 # create 
-
+            pass
                 
     def _getBuffer(self):
         buffer = None
@@ -68,10 +69,13 @@ class Clearer():
         else:
             clear()
 
-
 clear()
 
-out = DrawlibOut("Buffer")
+width, height = os.get_terminal_size()
+
+buffer = BufferCachedClear(width,height)
+
+out = DrawlibOut("Buffer",buffInst=buffer)
 
 blue  = TextObj("{f.blue}#{r}")
 red   = TextObj("{f.red}@{r}")
@@ -86,14 +90,17 @@ try:
     while True:
         reset_write_head()
 
+        out.clear()
         sleep(2)
         ob2.xM = 22
         ob2.char = red
         ob1.draw(drawNc=True)
         ob2.draw(drawNc=True)
+        out.draw()
 
         sleep(2)
-        clearer.apply() #out.fill(" ")
+        out.clear()
+        out.draw()
         ob2.xM = 24
         ob2.char = green
         ob1.draw(drawNc=True)
