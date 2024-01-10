@@ -1,5 +1,5 @@
-from linedraw import *
-from coloring import autoNoneColor,DrawlibStdPalette
+from .linedraw import *
+from .coloring import autoNoneColor,DrawlibStdPalette
 
 # Helper function to check the type of an object if its a type
 def _isPoint(obj):
@@ -22,8 +22,10 @@ class point():
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
     # Use the linedraw.draw_point function
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_point(self.char,self.x1,self.y1, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_point(self.char,self.x1,self.y1, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_point(self.char,self.x1,self.y1, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class line():
     def __init__(self,char,x1,y1,x2,y2, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -36,8 +38,10 @@ class line():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_line(self.char,self.x1,self.y1,self.x2,self.y2, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_line(self.char,self.x1,self.y1,self.x2,self.y2, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_line(self.char,self.x1,self.y1,self.x2,self.y2, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class triangle():
     def __init__(self,char,x1,y1,x2,y2,x3,y3, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -52,8 +56,10 @@ class triangle():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_triangle_coords(self.char,self.x1,self.y1,self.x2,self.y2,self.x3,self.y3, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_triangle_coords(self.char,self.x1,self.y1,self.x2,self.y2,self.x3,self.y3, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_triangle_coords(self.char,self.x1,self.y1,self.x2,self.y2,self.x3,self.y3, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class rectangle():
     def __init__(self,char,x1,y1,x2,y2,x3,y3,x4,y4, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -70,11 +76,16 @@ class rectangle():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_line(self.char, self.x1,self.y1, self.x2,self.y2, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
-        draw_line(self.char, self.x2,self.y2, self.x3,self.y3, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
-        draw_line(self.char, self.x3,self.y3, self.x4,self.y4, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
-        draw_line(self.char, self.x4,self.y4, self.x1,self.y1, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_line(self.char, self.x1,self.y1, self.x2,self.y2, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char, self.x2,self.y2, self.x3,self.y3, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char, self.x3,self.y3, self.x4,self.y4, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char, self.x4,self.y4, self.x1,self.y1, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_line(self.char, self.x1,self.y1, self.x2,self.y2, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char, self.x2,self.y2, self.x3,self.y3, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char, self.x3,self.y3, self.x4,self.y4, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char, self.x4,self.y4, self.x1,self.y1, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class rectangle2():
     def __init__(self,char,c1,c2, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -87,7 +98,7 @@ class rectangle2():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
         c1x = self.c1[0]
         c1y = self.c1[1]
         c2x = self.c2[0]
@@ -96,10 +107,23 @@ class rectangle2():
         p2 = [c2x,c1y]
         p3 = [c2x,c2y]
         p4 = [c1x,c2y]
-        draw_line(self.char,*p1,*p2, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
-        draw_line(self.char,*p2,*p3, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
-        draw_line(self.char,*p3,*p4, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
-        draw_line(self.char,*p4,*p1, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p1,*p2, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p2,*p3, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p3,*p4, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p4,*p1, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        c1x = self.c1[0]
+        c1y = self.c1[1]
+        c2x = self.c2[0]
+        c2y = self.c2[1]
+        p1 = [c1x,c1y]
+        p2 = [c2x,c1y]
+        p3 = [c2x,c2y]
+        p4 = [c1x,c2y]
+        draw_line(self.char,*p1,*p2, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p2,*p3, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p3,*p4, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        draw_line(self.char,*p4,*p1, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class circle():
     def __init__(self,char,xM,yM,r, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -111,8 +135,10 @@ class circle():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_circle(self.char,self.xM,self.yM,self.r, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_circle(self.char,self.xM,self.yM,self.r, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_circle(self.char,self.xM,self.yM,self.r, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class ellipse():
     def __init__(self,char,cX,cY,xRad,yRad, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -125,8 +151,10 @@ class ellipse():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_ellipse(self.char,self.cX,self.cY,self.xRad,self.yRad, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_ellipse(self.char,self.cX,self.cY,self.xRad,self.yRad, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_ellipse(self.char,self.cX,self.cY,self.xRad,self.yRad, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class quadBezier():
     def __init__(self,char,sX,sY,cX,cY,eX,eY, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -141,8 +169,10 @@ class quadBezier():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_quadBezier(self.char,self.sX,self.sY,self.cX,self.cY,self.eX,self.eY, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_quadBezier(self.char,self.sX,self.sY,self.cX,self.cY,self.eX,self.eY, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_quadBezier(self.char,self.sX,self.sY,self.cX,self.cY,self.eX,self.eY, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
 class cubicBezier():
     def __init__(self,char,sX,sY,c1X,c1Y,c2X,c2Y,eX,eY,algorithm="step",modifier=None, output=object,baseColor=None,palette=DrawlibStdPalette, autoDraw=False,autoDrawNc=False):
@@ -165,7 +195,9 @@ class cubicBezier():
         self.palette = palette
         self.output = output
         if autoDraw == True: self.draw(autoDrawNc)
-    def draw(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
-        draw_cubicBezier(self.char,self.sX,self.sY,self.c1X,self.c1Y,self.c2X,self.c2Y,self.eX,self.eY,self.algorithm,self.modifier, self.output,self.baseColor,self.palette, drawNc, supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+    def draw(self,drawNc=False,clamps=None,excludeClamped=True):
+        draw_cubicBezier(self.char,self.sX,self.sY,self.c1X,self.c1Y,self.c2X,self.c2Y,self.eX,self.eY,self.algorithm,self.modifier, self.output,self.baseColor,self.palette, drawNc,clamps=clamps,excludeClamped=excludeClamped)
+    def put(self,clamps=None,excludeClamped=True):
+        draw_cubicBezier(self.char,self.sX,self.sY,self.c1X,self.c1Y,self.c2X,self.c2Y,self.eX,self.eY,self.algorithm,self.modifier, self.output,self.baseColor,self.palette, supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 
         

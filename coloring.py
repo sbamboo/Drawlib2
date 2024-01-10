@@ -1,6 +1,6 @@
-from libs.stringTags import formatStringTags
-
 import re
+
+from .libs.stringTags import formatStringTags
 
 DrawlibStdPalette = {
     "f_Black": "90m",

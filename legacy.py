@@ -11,7 +11,7 @@ Be worry that no support will be given for these so use them at your own risk.
 \033[0m""")
 
 # region =============================[Core.Buffering]=============================
-from coloring import DrawlibStdPalette
+from .coloring import DrawlibStdPalette
 class CoreSPBuffer():
     def __init__(self,width,height,iChar=" "):
         if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]
@@ -232,8 +232,8 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int, overwWidth=None,over
 #endregion
 
 # region ===========================[Linedraw.Functions]===========================
-from tools import capIntsX,capIntsY
-from pointGroupAlgorithms import *
+from .tools import capIntsX,capIntsY
+from .pointGroupAlgorithms import *
 def fill_terminal(st, baseColor=None,palette=DrawlibStdPalette, wi=None,hi=None,overwWidth=None,overwHeight=None,mode=None,drawNc=False, buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
     if wi != None: overwWidth = wi
     if hi != None: overwHeight = hi

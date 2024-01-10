@@ -1,4 +1,4 @@
-from libs.crshpiptools import autopipImport
+from .libs.crshpiptools import autopipImport
 
 BeautifulSoup = autopipImport("bs4",attr="BeautifulSoup")
 fm = autopipImport("matplotlib.font_manager",pipName="matplotlib")

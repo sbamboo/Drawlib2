@@ -1,6 +1,6 @@
-from imageRenderer.ImageRenderer_Beta import ImageRenderer
-from dtypes import render_listTexture,render_texture,_join_with_delimiter
-from coloring import DrawlibStdPalette,removeAnsiSequences
+from .imageRenderer.ImageRenderer_Beta import ImageRenderer
+from .dtypes import render_listTexture,render_texture,_join_with_delimiter
+from .coloring import DrawlibStdPalette,removeAnsiSequences
 
 class asciiImage():
     def __init__(self,imagePath=str,mode="standard",char=None,pc=False,method="lum",invert=False,monochrome=False,width=None,height=None,resampling="lanczos",textureCodec=None,xPos=None,yPos=None,strTxtMethod=False,output=None,baseColor=None,palette=DrawlibStdPalette):
@@ -66,7 +66,7 @@ class asciiImage():
             return len(list(removeAnsiSequences(lines[0]))),len(lines)
         else:
             return len(list(removeAnsiSequences(self.texture[0]))),len(self.texture)
-    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,clamps=None,excludeClamped=True):
         if output == None: output = self.output
         if xPos == None: xPos = self.xPos
         if xPos == None: raise ValueError("xPos not defined!")
@@ -74,9 +74,21 @@ class asciiImage():
         if yPos == None: raise ValueError("yPos not defined!")
         if self.texture == None: self._getTexture()
         if self.strTxtMethod == True:
-            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
         else:
-            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        return self
+    def put(self,xPos=None,yPos=None,output=None,clamps=None,excludeClamped=True):
+        if output == None: output = self.output
+        if xPos == None: xPos = self.xPos
+        if xPos == None: raise ValueError("xPos not defined!")
+        if yPos == None: yPos = self.yPos
+        if yPos == None: raise ValueError("yPos not defined!")
+        if self.texture == None: self._getTexture()
+        if self.strTxtMethod == True:
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        else:
+            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
         return self
 
 class boxImage():
@@ -141,7 +153,7 @@ class boxImage():
             return len(list(removeAnsiSequences(lines[0]))),len(lines)
         else:
             return len(list(removeAnsiSequences(self.texture[0]))),len(self.texture)
-    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+    def draw(self,xPos=None,yPos=None,output=None,drawNc=False,clamps=None,excludeClamped=True):
         if output == None: output = self.output
         if xPos == None: xPos = self.xPos
         if xPos == None: raise ValueError("xPos not defined!")
@@ -149,8 +161,20 @@ class boxImage():
         if yPos == None: raise ValueError("yPos not defined!")
         if self.texture == None: self._getTexture()
         if self.strTxtMethod == True:
-            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
         else:
-            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
+        return self
+    def put(self,xPos=None,yPos=None,output=None,clamps=None,excludeClamped=True):
+        if output == None: output = self.output
+        if xPos == None: xPos = self.xPos
+        if xPos == None: raise ValueError("xPos not defined!")
+        if yPos == None: yPos = self.yPos
+        if yPos == None: raise ValueError("yPos not defined!")
+        if self.texture == None: self._getTexture()
+        if self.strTxtMethod == True:
+            render_texture(xPos,yPos,self.texture,output,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        else:
+            render_listTexture(xPos,yPos,self.texture,output,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
         return self
         

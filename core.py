@@ -1,9 +1,10 @@
-from types import MethodType
-from tools import clampToRanges,check_clamp,clampS,check_clampM,clampM,clampTX,check_clampTX
-from libs.conUtils import clear,getConSize,setConSize,pause
-from terminal import draw
-from coloring import removeAnsiSequences,TextObj,DrawlibStdPalette,autoNoneColor
 import json,os
+from types import MethodType
+
+from .tools import clampToRanges,check_clamp,clampS,check_clampM,clampM,clampTX,check_clampTX
+from .libs.conUtils import clear,getConSize,setConSize,pause
+from .terminal import draw
+from .coloring import removeAnsiSequences,TextObj,DrawlibStdPalette,autoNoneColor
 
 # region Exceptions
 class InvalidOutputSize(Exception):
@@ -107,6 +108,17 @@ def checkSectionRange(xRange=None,yRange=None,bufferXKeys=list,bufferYKeys=list)
         section = True
     if validRange == False: raise SectionRangeOutOfBounds(errMsg)
     return section,xRange,yRange
+
+def picklePrioCopy(_dict):
+    '''Function to deepcopy a dictionary of depth 1, it uses pickle when avaliable and if not for loops.'''
+    try:
+        import pickle
+        return pickle.loads(pickle.dumps(_dict))
+    except:
+        nd = {}
+        for sub in _dict:
+            nd[sub] = _dict[sub].copy()
+        return nd
 # endregion
 
 # region Buffer & Output classes
@@ -306,8 +318,21 @@ class BufferCachedClear():
         self.fallbackChar = fallbackChar
         self.autoStr = autoStr
         self.cache = None
+        self.cacheSize = None
     def _cacheContent(self):
-        self.cache = self.buffer.copy()
+        self.cache = picklePrioCopy(self.buffer) # maybe find a better way
+        self.cacheSize = self.bufferSize
+    def _rebuildCache(self):
+        self.cache = {}
+        for y in range(self.bufferSize[1]):
+            self.cache[y] = {}
+        self.cacheSize = self.bufferSize
+    def _returnCache(self):
+        self.buffer = picklePrioCopy(self.cache) # maybe find a better way
+    def _rebuildBuffer(self):
+        self.buffer = {}
+        for y in range(self.bufferSize[1]):
+            self.buffer[y] = {}
     def isCreated(self):
         if self.buffer == None:
             return False
@@ -328,21 +353,20 @@ class BufferCachedClear():
                 raise CellOpOutofBounds()
     def create(self):
         if self.isCreated() == False:
-            self._cacheClear()
-    def _cacheClear(self):
-        self.buffer = {}
-        for y in range(self.bufferSize[1]):
-            self.buffer[y] = {}
-        self._cacheContent()
+            self._rebuildBuffer()
+            self._rebuildCache()
     def destroy(self):
         if self.isCreated() == True:
             self.buffer = None
+            self.cache = None
     def clear(self):
         if self.isCreated() == True:
             if self.cache == None:
-                self._cacheClear()
+                self._rebuildBuffer()
             else:
-                self.buffer = self.cache
+                if self.bufferSize != self.cacheSize:
+                    self._rebuildCache()
+                self._returnCache()
         else:
             raise UncreatedBuffer()
     def put(self,x,y,st):
@@ -436,7 +460,7 @@ class BufferCachedClear():
                     idata = data[y][x]
                     data[y][x] = TextObj("")
                     data[y][x].imprt(idata)
-        self._cacheClear()
+        self._rebuildCache()
         self.buffer = data
     def getStrLines(self,xRange=None,yRange=None):
         # raise on non-created
@@ -773,7 +797,7 @@ class DrawlibOut():
 # endregion
 
 # region draw functions
-def base_croutput(overwWidth=None,overwHeight=None,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
+def base_croutput(overwWidth=None,overwHeight=None,mode="Console",buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None,wi=None,hi=None,autoLink=False):
     '''Returns a drawlib-output object created with the given parameters.'''
     return DrawlibOut(
         mode=mode,
@@ -783,7 +807,10 @@ def base_croutput(overwWidth=None,overwHeight=None,mode="Console",buffIChar=" ",
         buffAutoStr=buffAutoStr,
         buffInst=buffInst,
         channelObj=channelObj,
-        outputObj=outputObj
+        outputObj=outputObj,
+        wi=wi,
+        hi=hi,
+        autoLink=autoLink
     )
 
 def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True,drawXrange=None,drawYrange=None):
@@ -803,7 +830,7 @@ def base_draw(st=str,x=int,y=int,output=object,baseColor=None,palette=DrawlibStd
     try:
         if output.mode != "Console" and supressDraw != True:
             output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
-    except AttributeError(): pass
+    except AttributeError: pass
 
 def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output object to draw on each coord-pair in coords list.'''
@@ -822,7 +849,7 @@ def base_mdraw(st=str,coords=list,output=object,baseColor=None,palette=DrawlibSt
     try:
         if output.mode != "Console":
             output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
-    except AttributeError(): pass
+    except AttributeError: pass
 
 def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output object to draw on each cell.'''
@@ -836,7 +863,7 @@ def base_fill(st=str,output=object,baseColor=None,palette=DrawlibStdPalette,draw
     try:
         if output.mode != "Console" and supressDraw != True:
             output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
-    except AttributeError(): pass
+    except AttributeError: pass
 
 def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True,drawXrange=None,drawYrange=None):
     '''Uses a drawlib-output to draw a texture.'''
@@ -877,5 +904,5 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int,output=object,baseCol
     try:
         if output.mode != "Console" and supressDraw != True:
             output.draw(drawNc,baseColor,palette,xRange=drawXrange,yRange=drawYrange)
-    except AttributeError(): pass
+    except AttributeError: pass
 # endregion

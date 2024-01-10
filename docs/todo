@@ -1,5 +1,3 @@
- - fix so drawlib(v2) uses the same relative-package imports as in drawlib(v1)
- - refactor drawlib to have render/draw and put functions not render/draw with supressDraw for the top-level things like linedraw/objects etc, in an attempt to be more descriptive
  - Check if generators works
  - Check if manip works
- - Rewrite the Buffer() class's clear() method and possibly add the old one as an option, make the class cache its "reset" stage/data and fill that in when clearing, note to update this cache when "buffer-changing" operations are run (changing size)
+ - Decide if the Buffer class or the BufferCachedClear class should be default

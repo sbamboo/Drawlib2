@@ -1,11 +1,10 @@
-from core import vw,vh,ConsoleOutput,CellOpOutofBounds
-from linedraw import draw_point,draw_line
-from coloring import TextObj,DrawlibStdPalette
-from libs.conUtils import getConSize,setConSize,clear,pause
-from pointGroupAlgorithms import beethams_line_algorithm
-from core import base_mdraw
-
 import os,time
+
+from .core import vw,vh,ConsoleOutput,CellOpOutofBounds,base_mdraw
+from .linedraw import draw_point,draw_line
+from .coloring import TextObj,DrawlibStdPalette
+from .libs.conUtils import getConSize,setConSize,clear,pause
+from .pointGroupAlgorithms import beethams_line_algorithm
 
 def draw_info(width,height,cw,ch,output,stripAnsi,draw_cross=True):
     if ch < 15 or cw < 56:

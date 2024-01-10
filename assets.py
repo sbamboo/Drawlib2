@@ -1,6 +1,6 @@
-from core import base_draw
-from coloring import DrawlibStdPalette
-from tools import clampTX,check_clampTX
+from .core import base_draw
+from .coloring import DrawlibStdPalette
+from .tools import clampTX,check_clampTX
 
 # ============================[DrawlibV1/DrawlibV2 assets format]============================
 # De tokenising function (Variables in string surrounded by %)
@@ -99,9 +99,12 @@ class asset():
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.posX,self.posY,self.texture,self.color,self.extra,self.comment = load_asset(self.filepath,encoding)
-	def render(self,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+	def render(self,drawNc=False,clamps=None,excludeClamped=True):
 		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
+	def render_put(self,clamps=None,excludeClamped=True):
+		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 	def asTexture(self):
 		return self.texture
 	def asAsset(self):
@@ -122,9 +125,12 @@ class texture():
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.texture = load_texture(self.filepath,encoding)
-	def render(self,posX=int,posY=int,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
+	def render(self,posX=int,posY=int,drawNc=False,clamps=None,excludeClamped=True):
 		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,supressDraw=supressDraw,clamps=clamps,excludeClamped=excludeClamped)
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
+	def render_put(self,posX=int,posY=int,clamps=None,excludeClamped=True):
+		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
+		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 	def asTexture(self):
 		return self.texture
 	def asAsset(self,posX=int,posY=int,color=None):

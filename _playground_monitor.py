@@ -4,11 +4,12 @@ from libs.conUtils import clear,pause,setConTitle,setConSize
 from terminal import draw
 
 parser = argparse.ArgumentParser(description='Playground monitor')
-parser.add_argument('-oname',type=str,help="Name of output Obj")
-parser.add_argument('-omode',type=str,help="Mode of output Obj")
+parser.add_argument('-oname',type=str,help="Name of outputObj")
+parser.add_argument('-omode',type=str,help="Mode of outputObj")
 parser.add_argument('-wmon',type=str,help="Takes 'True' or 'False' if monitor should wait for inp.")
-parser.add_argument('-xdim',type=str,help="Width of monitor window")
-parser.add_argument('-ydim',type=str,help="Height of monitor window")
+parser.add_argument('-xdim',type=str,help="Width of monitor window.")
+parser.add_argument('-ydim',type=str,help="Height of monitor window.")
+parser.add_argument('-buffOname',type=str,help="Name of the outputObj's buffer object.")
 args = parser.parse_args()
 
 _waiting = args.wmon == "True"
@@ -34,6 +35,11 @@ os.system("")
 
 _pspec_uname_str = _uname.replace("^<","").replace("^>","").split(" object at ")
 _pspec_uname_str = "\n    Type: "+_pspec_uname_str[0]+"\n    Addr: "+_pspec_uname_str[1]
+if args.buffOname != "" and args.buffOname != None:
+    _buffOname = args.buffOname.replace("@a","<").replace("@b",">").replace("@s"," ").replace("@q","'").replace("@d",'"')
+    _pspec_uname_str += "\n    BufferObj: "+_buffOname
+
+_conSize = os.get_terminal_size()
 
 print("Waiting for playground to output buffer content...")
 print("When the first command is executed in playground you will get a live view of the buffer here, press Ctrl+C to exit.")
@@ -42,7 +48,7 @@ print(f"  MonitorMode: Waiting" if _waiting else "  MonitorMode: Auto")
 print(f"  ShowingObj: {_pspec_uname_str}" if _uname != "" else "  ShowingObj: <Unknown>")
 print(f"  Mode: {args.omode}" if args.omode != "" and args.omode != None else "  Mode: <Unknown>")
 print(f"  Size: {args.xdim}x{args.ydim}" if args.xdim != None and args.ydim != None else "  Size: <UnSpecified>")
-print("-"*os.get_terminal_size()[0])
+print("-"*_conSize[0])
 
 while True:
     try:
@@ -58,7 +64,8 @@ while True:
                 for cell in line:
                     xi = cell
                     cell = line[str(cell)]
-                    draw(xi,yi,cell)
+                    if int(xi) <= _conSize[0] and int(yi) <= _conSize[1]:
+                        draw(xi,yi,cell)
             if _waiting: os.remove(_logFile)
     except KeyboardInterrupt:
         try:

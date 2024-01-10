@@ -1,7 +1,7 @@
-from core import base_draw,base_fill,base_mdraw
-from coloring import DrawlibStdPalette
-from pointGroupAlgorithms import *
-from tools import capIntsX,capIntsY,resolveClamps,clamp,clampM,clampS,check_clamp,check_clampM,check_clampS,filter_clampM
+from .core import base_draw,base_fill,base_mdraw
+from .coloring import DrawlibStdPalette
+from .pointGroupAlgorithms import *
+from .tools import capIntsX,capIntsY,resolveClamps,clamp,clampM,clampS,check_clamp,check_clampM,check_clampS,filter_clampM
 
 def move_write_head(x=int,y=int):
     line = "\033[{};{}H".format(x,y)

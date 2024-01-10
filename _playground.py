@@ -80,10 +80,14 @@ if "--autoMon" in sys.argv:
 _sizeMonitor = False
 if "--sizeMon" in sys.argv:
     _sizeMonitor = True
+_nolinkOnMonLaunch = False
+if "--noAutoLink" in sys.argv:
+    _nolinkOnMonLaunch = True
 if "--help" in sys.argv or "-h" in sys.argv or "--h" in sys.argv or "-help" in sys.argv:
-    print(f"\nUsage: {os.path.basename(sys.executable)} {os.path.basename(__file__)} [--autoMon] [--sizeMon]")
+    print(f"\nUsage: {os.path.basename(sys.executable)} {os.path.basename(__file__)} [--autoMon] [--sizeMon] [--noAutoLink]")
     print("\nAutoMon:\n    Starts any monitor instance in auto mode, meaning it will not wait for input before drawing the buffer. (<outputObj>.clear() won't affect monitor)")
-    print("SizeMon:\n    Starts any monitor instance with the size of the buffer.\n")
+    print("SizeMon:\n    Starts any monitor instance with the size of the buffer.")
+    print("NoAutoLink:\n    Won't automaticly link the DrawlibOut instance to its outputObj when the monitor is launched.\n")
     exit()
 
 _playground_internal_python_org_exit = exit
@@ -99,13 +103,20 @@ exit = _texit
 
 def launchMonitor(out=object):
     global _loggbuff,_outputObj,_monitorProcess
+    if out.mode not in _bufferedModes:
+        print(f"\033[31mCan't launch monitor for non-buffered output.\033[0m")
+        return
     _loggbuff = True
     _outputObj = out
-    try:
-        out._link()
-    except: pass
+    if _nolinkOnMonLaunch == False:
+        try:
+            out._link()
+        except: pass
     _sname = str(_outputObj).replace("<","@a").replace(">","@b").replace(" ","@s").replace("'","@q").replace('"','@d')
     _pargs = [sys.executable, _monitorScript, "-oname",_sname, "-wmon",str(_waitingMonitor), "-omode",str(_outputObj.mode)]
+    if _outputObj.linked != None:
+        _bsname = str(_outputObj.linked.buffer).replace("<","@a").replace(">","@b").replace(" ","@s").replace("'","@q").replace('"','@d')
+        _pargs.extend(["-buffOname",_bsname])
     if _sizeMonitor == True:
         _width, _height = out.getsize()
         _pargs.extend(["-xdim",str(_width), "-ydim",str(_height)])
@@ -114,15 +125,30 @@ def launchMonitor(out=object):
 def fillMonitor(out=object,char=" "):
     global _outputObj
     if out == None:
-        _outputObj.linked.buffer.fill(char)
+        if _outputObj != None:
+            print(f"\033[31mCan't fill non-launched monitor, use launchMonitor(<outputObj>) first.\033[0m")
+            return
+        else:
+            try:
+                _outputObj.linked.buffer.fill(char)
+            except:
+                print(f"\033[31mCan't fill without buffer on output, either its a non-buffered obj or it's not linked.\033[0m")
+                return
     else:
-        out.linked.buffer.fill(char)
+        try:
+            out.linked.buffer.fill(char)
+        except:
+            print(f"\033[31mCan't fill without buffer on output, either its a non-buffered obj or it's not linked.\033[0m")
+            return
 
 def killMonitor(*args,**kwargs):
     global _monitorProcess
     if _monitorProcess != None:
         _monitorProcess.terminate()
         _monitorProcess = None
+    else:
+        print(f"\033[31mCan't kill non-launched monitor, use launchMonitor(<outputObj>) first.\033[0m")
+        return
 
 width = os.get_terminal_size()[0]
 
@@ -149,12 +175,26 @@ while True:
     try:
         draw(x,y," "*width)
         _inp = inputAtPos(x,y,prefix)
-        if "deb:" in _inp:
+        _t = _inp.split(":")
+        _t.pop(-1)
+        if len(_t) == 1: _t = _t[0] + ":"
+        else:
+            _t = ":".join(_t)
+        if "deb:" in _t:
             debug = True
-            _inp = _inp.replace("deb:","").strip()
-        if "clr:" in _inp:
+            _inp = _inp.replace("deb:","",1).strip()
+        if "clr:" in _t:
             clear()
-            _inp = _inp.replace("clr:","").strip()
+            _inp = _inp.replace("clr:","",1).strip()
+        if "ins:" in _t:
+            _inp = _inp.replace("ins:","",1).strip()
+            _inp = "print(" + _inp + ")"
+        if "inss:" in _t:
+            _inp = _inp.replace("inss:","",1).strip()
+            _inp = "print('" + _inp + "')"
+        if "insd:" in _t:
+            _inp = _inp.replace("insd:","",1).strip()
+            _inp = 'print("' + _inp + '")'
     except KeyboardInterrupt: _texit()
     try: exec(_inp)
     except Exception as e:
@@ -166,4 +206,5 @@ while True:
         if _outputObj.mode in _bufferedModes:
             if "launchMonitor(" in _inp and ";" not in _inp: pass
             else:
-                open(_logFile,'w').write( json.dumps( _outputObj.linked.buffer.buffer ) )
+                if _outputObj.linked != None:
+                    open(_logFile,'w').write( json.dumps( _outputObj.linked.buffer.buffer ) )

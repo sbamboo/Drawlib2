@@ -2,7 +2,7 @@ from core import DrawlibOut,Buffer,BufferCachedClear
 from terminal import reset_write_head
 from shapes import *
 from coloring import TextObj
-from libs.conUtils import clear
+from libs.conUtils import clear,pause
 
 import os
 from time import sleep
@@ -76,6 +76,7 @@ width, height = os.get_terminal_size()
 buffer = BufferCachedClear(width,height)
 
 out = DrawlibOut("Buffer",buffInst=buffer)
+#out = DrawlibOut("Buffer")
 
 blue  = TextObj("{f.blue}#{r}")
 red   = TextObj("{f.red}@{r}")
@@ -84,27 +85,33 @@ green = TextObj("{f.green}@{r}")
 ob1 = circle(blue,10,10,5,out)
 ob2 = circle(red, 22,10,5,out)
 
-clearer = Clearer(out)
+delay = 0
 
 try:
     while True:
+
+        erase(ob2)
         reset_write_head()
 
         out.clear()
-        sleep(2)
+        ob1.draw(drawNc=True) #put
         ob2.xM = 22
         ob2.char = red
-        ob1.draw(drawNc=True)
-        ob2.draw(drawNc=True)
-        out.draw()
+        ob2.draw(drawNc=True) #put
+        out.draw(nc=True)
 
-        sleep(2)
+        sleep(delay)
+
+        erase(ob2)
+        reset_write_head()
+
         out.clear()
-        out.draw()
+        ob1.draw(drawNc=True) #put
         ob2.xM = 24
         ob2.char = green
-        ob1.draw(drawNc=True)
-        ob2.draw(drawNc=True)
+        ob2.draw(drawNc=True) #put
+        out.draw(nc=True)
 
-except KeyboardInterrupt:
-    pass
+        sleep(delay)
+
+except KeyboardInterrupt: pass

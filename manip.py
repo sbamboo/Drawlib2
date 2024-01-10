@@ -1,6 +1,7 @@
 import math
-from dtypes import normalizeTextureSplit
-from tools import getTopLeft,coordinateDifference,addDiffToCoords
+
+from .dtypes import normalizeTextureSplit
+from .tools import getTopLeft,coordinateDifference,addDiffToCoords
 
 def fillShape(texture=list,backgroundChars=[" "],fillChar=str):
     nTex = []
