@@ -19,6 +19,7 @@ try:
     from pointGroupAlgorithms import *
     from shapes import *
     from terminal import *
+    from version import *
 except:
     try:
         from .libs.conUtils import *
@@ -38,6 +39,7 @@ except:
         from .pointGroupAlgorithms import *
         from .shapes import *
         from .terminal import *
+        from .version import *
     except:
         try:
             from Drawlib2.libs.conUtils import *
@@ -57,6 +59,7 @@ except:
             from Drawlib2.pointGroupAlgorithms import *
             from Drawlib2.shapes import *
             from Drawlib2.terminal import *
+            from Drawlib2.version import *
         except:
             try:
                 _parent = os.path.dirname(os.path.abspath(__file__))
@@ -78,6 +81,7 @@ except:
                 from Drawlib2.pointGroupAlgorithms import *
                 from Drawlib2.shapes import *
                 from Drawlib2.terminal import *
+                from Drawlib2.version import *
             except:
                 os.system("")
                 print("\033[31mFailed to import drawlib, please make sure playground is either in an approriate folder relative to Drawlib.\033[0m")

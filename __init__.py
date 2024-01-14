@@ -16,6 +16,7 @@ from . import pointGroupAlgorithms
 from . import shapes
 from . import terminal
 from . import tools
+from . import version
 
 from .libs import conUtils as lib_conUtils
 from .libs import crshpiptools as lib_crshpiptools
@@ -51,6 +52,7 @@ class DrawlibRenderer():
         self.shapes = shapes
         self.terminal = terminal
         self.tools = tools
+        self.version = version
         
         self.fill_terminal = fill_terminal
         self.stdpalette = stdpalette
