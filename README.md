@@ -23,6 +23,7 @@ Author:  Simon Kalmi Claesson
  - shapes.py: Contains classes for some premade shapes, building on the linedraw.py implementations. (No support for character-generators)
  - terminal.py: The most basic core functionality of drawlib, its building-blocks live here. Some basic ANSI rendering functions.
  - tools.py: Contains some tools for internal use in drawlib aswell as use by the users.
+ - version.py: Contains some tools regarding drawlib versioning and reading lib.json.
 
 ### Difference between objects.py and shapes.py
 As noted above objects.py and shapes.py are very similar, except classes from objects.py support character-generators.
