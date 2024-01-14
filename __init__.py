@@ -1,21 +1,38 @@
 # Exists to allow relative import
-
-from . import assets
-from . import coloring
-from . import consoletools
-from . import core
-from . import dtypes
-from . import fonts
-from . import generators
-from . import imaging
-from . import linedraw
-from . import manip
-from . import objects
-from . import pointGroupAlgorithms
-from . import shapes
-from . import terminal
-from . import tools
-from . import version
+try:
+    from . import assets
+    from . import coloring
+    from . import consoletools
+    from . import core
+    from . import dtypes
+    from . import fonts
+    from . import generators
+    from . import imaging
+    from . import linedraw
+    from . import manip
+    from . import objects
+    from . import pointGroupAlgorithms
+    from . import shapes
+    from . import terminal
+    from . import tools
+    from . import version
+except:
+    from Drawlib2 import assets
+    from Drawlib2 import coloring
+    from Drawlib2 import consoletools
+    from Drawlib2 import core
+    from Drawlib2 import dtypes
+    from Drawlib2 import fonts
+    from Drawlib2 import generators
+    from Drawlib2 import imaging
+    from Drawlib2 import linedraw
+    from Drawlib2 import manip
+    from Drawlib2 import objects
+    from Drawlib2 import pointGroupAlgorithms
+    from Drawlib2 import shapes
+    from Drawlib2 import terminal
+    from Drawlib2 import tools
+    from Drawlib2 import version
 
 from .libs import conUtils as lib_conUtils
 from .libs import crshpiptools as lib_crshpiptools

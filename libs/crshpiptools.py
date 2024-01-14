@@ -68,10 +68,9 @@ def autopipImport(moduleName=str,pipName=None,addPipArgsStr=None,cusPip=None,att
         return imported_module
 
 
-def fromPath(path):
-    '''This function is from crosshell/cslib, authored by: Simon Kalmi Claesson.'''
+def fromPath(path,module_name="module"):
     path = path.replace("\\",os.sep)
-    spec = importlib.util.spec_from_file_location("module", path)
+    spec = importlib.util.spec_from_file_location(module_name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

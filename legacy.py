@@ -10,41 +10,24 @@ In other words features that are deprecated and/or replaced by newer or better a
 Be worry that no support will be given for these so use them at your own risk.
 \033[0m""")
 
+# region MANUAL VERSION INTEAD OF IMPORTS
+DrawlibStdPalette = {"f_Black": "90m","b_Black": "100m","f_Red": "91m","b_Red": "101m","f_Green": "92m","b_Green": "102m","f_Yellow": "93m","b_Yellow": "103m","f_Blue": "94m","b_Blue": "104m","f_Magenta": "95m","b_Magenta": "105m","f_Cyan": "96m","b_Cyan": "106m","f_White": "97m","b_White": "107m","f_DarkBlack": "30m","b_DarkBlack": "40m","f_DarkRed": "31m","b_DarkRed": "41m","f_DarkGreen": "32m","b_DarkGreen": "42m","f_DarkYellow": "33m","b_DarkYellow": "43m","f_DarkBlue": "34m","b_DarkBlue": "44m","f_DarkMagenta": "35m","b_DarkMagenta": "45m","f_DarkCyan": "36m","b_DarkCyan": "46m","f_DarkWhite": "37m","b_DarkWhite": "47m"}
+def capIntsX(values=list):
+    sc_width, _ = shutil.get_terminal_size()
+    for value in values:
+        if type(value) == int: raise ValueError("X cappedInt's value must be inside terminalResolution") if value > sc_width or value < 0 else None
+def capIntsY(values=list):
+    _, sc_height = shutil.get_terminal_size()
+    for value in values:
+        if type(value) == int: raise ValueError("Y cappedInt's value must be inside terminalResolution") if value > sc_height or value < 0 else None
+import importlib,os
+spec = importlib.util.spec_from_file_location("module", os.path.join(os.path.dirname(os.path.abspath(__file__)),"pointGroupAlgorithms.py"))
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+globals().update(module.__dict__)
+# endregion MANUAL VERSION INTEAD OF IMPORTS
+
 # region =============================[Core.Buffering]=============================
-DrawlibStdPalette = {
-    "f_Black": "90m",
-    "b_Black": "100m",
-    "f_Red": "91m",
-    "b_Red": "101m",
-    "f_Green": "92m",
-    "b_Green": "102m",
-    "f_Yellow": "93m",
-    "b_Yellow": "103m",
-    "f_Blue": "94m",
-    "b_Blue": "104m",
-    "f_Magenta": "95m",
-    "b_Magenta": "105m",
-    "f_Cyan": "96m",
-    "b_Cyan": "106m",
-    "f_White": "97m",
-    "b_White": "107m",
-    "f_DarkBlack": "30m",
-    "b_DarkBlack": "40m",
-    "f_DarkRed": "31m",
-    "b_DarkRed": "41m",
-    "f_DarkGreen": "32m",
-    "b_DarkGreen": "42m",
-    "f_DarkYellow": "33m",
-    "b_DarkYellow": "43m",
-    "f_DarkBlue": "34m",
-    "b_DarkBlue": "44m",
-    "f_DarkMagenta": "35m",
-    "b_DarkMagenta": "45m",
-    "f_DarkCyan": "36m",
-    "b_DarkCyan": "46m",
-    "f_DarkWhite": "37m",
-    "b_DarkWhite": "47m"
-}
 class CoreSPBuffer():
     def __init__(self,width,height,iChar=" "):
         if height == "vh" or isinstance(height,MethodType): height = getConSize()[-1]
@@ -265,25 +248,6 @@ def base_texture(textureFile=str,tlCoordX=int,tlCoordY=int, overwWidth=None,over
 #endregion
 
 # region ===========================[Linedraw.Functions]===========================
-# Caps an int to the terminal size for X (for coordinates)
-def capIntsX(values=list):
-    sc_width, _ = shutil.get_terminal_size()
-    for value in values:
-        if type(value) == int:
-            if value > sc_width or value < 0:
-                raise ValueError("X cappedInt's value must be inside terminalResolution")
-# Caps an int to the terminal size for Y (for coordinates)
-def capIntsY(values=list):
-    _, sc_height = shutil.get_terminal_size()
-    for value in values:
-        if type(value) == int:
-            if value > sc_height or value < 0:
-                raise ValueError("Y cappedInt's value must be inside terminalResolution")
-import importlib,os
-spec = importlib.util.spec_from_file_location("module", os.path.join(os.path.dirname(os.path.abspath(__file__)),"pointGroupAlgorithms.py"))
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-globals().update(module.__dict__)
 def fill_terminal(st, baseColor=None,palette=DrawlibStdPalette, wi=None,hi=None,overwWidth=None,overwHeight=None,mode=None,drawNc=False, buffIChar=" ",buffAutoStr=True,buffInst=None,channelObj=None,outputObj=None):
     if wi != None: overwWidth = wi
     if hi != None: overwHeight = hi
