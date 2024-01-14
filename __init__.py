@@ -8,7 +8,6 @@ from . import dtypes
 from . import fonts
 from . import generators
 from . import imaging
-from . import legacy
 from . import linedraw
 from . import manip
 from . import objects
@@ -33,6 +32,10 @@ numberGenerator = generators.numberGenerator
 rainbowGenerator = generators.rainbowGenerator
 rainbowGeneratorZero = generators.rainbowGeneratorZero
 
+def getLegacy():
+    import os
+    return lib_crshpiptools.fromPath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"legacy.py"))
+
 class DrawlibRenderer():
     '''Main drawlib renderer class. (Works as an import-wrapper)'''
     def __init__(self):
@@ -44,7 +47,6 @@ class DrawlibRenderer():
         self.fonts = fonts
         self.generators = generators
         self.imaging = imaging
-        self.legacy = legacy
         self.linedraw = linedraw
         self.manip = manip
         self.objects = objects
@@ -58,3 +60,5 @@ class DrawlibRenderer():
         self.stdpalette = stdpalette
         self.reset_write_head = terminal.reset_write_head
         self.DrawlibOut = core.DrawlibOut
+
+        self.getLegacy = getLegacy
