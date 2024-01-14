@@ -33,6 +33,7 @@ rainbowGenerator = generators.rainbowGenerator
 rainbowGeneratorZero = generators.rainbowGeneratorZero
 
 class DrawlibRenderer():
+    '''Main drawlib renderer class. (Works as an import-wrapper)'''
     def __init__(self):
         self.assets = assets
         self.coloring = coloring
