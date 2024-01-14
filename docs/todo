@@ -1,0 +1,7 @@
+# A little todo list for development :)
+
+ - Conic Bezier Curves
+ - circleSector: mX, mY, rad, deg1, deg2
+ - Maybe remove shapes.py?
+ - custom palette classObject with custom __get__ method to handle hex to rgbAnsi, remember to change the typeCheck to add or isInstance(palette,<Class>)
+ - find a better way to convert to-from splitPixelGroup (or make functions for each conversionType)
