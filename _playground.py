@@ -1,24 +1,66 @@
 # python
 import os,sys,subprocess
-# libs
-from libs.conUtils import *
-from libs.crshpiptools import *
-from libs.stringTags import *
-# drawlib
-from assets import *
-from coloring import *
-from consoletools import *
-from core import *
-from dtypes import *
-from fonts import *
-from generators import *
-from imaging import *
-from linedraw import *
-from manip import *
-from objects import *
-from pointGroupAlgorithms import *
-from shapes import *
-from terminal import *
+
+try:
+    from libs.conUtils import *
+    from libs.crshpiptools import *
+    from libs.stringTags import *
+    from assets import *
+    from coloring import *
+    from consoletools import *
+    from core import *
+    from dtypes import *
+    from fonts import *
+    from generators import *
+    from imaging import *
+    from linedraw import *
+    from manip import *
+    from objects import *
+    from pointGroupAlgorithms import *
+    from shapes import *
+    from terminal import *
+except:
+    try:
+        from .libs.conUtils import *
+        from .libs.crshpiptools import *
+        from .libs.stringTags import *
+        from .assets import *
+        from .coloring import *
+        from .consoletools import *
+        from .core import *
+        from .dtypes import *
+        from .fonts import *
+        from .generators import *
+        from .imaging import *
+        from .linedraw import *
+        from .manip import *
+        from .objects import *
+        from .pointGroupAlgorithms import *
+        from .shapes import *
+        from .terminal import *
+    except:
+        try:
+            from Drawlib_V2.libs.conUtils import *
+            from Drawlib_V2.libs.crshpiptools import *
+            from Drawlib_V2.libs.stringTags import *
+            from Drawlib_V2.assets import *
+            from Drawlib_V2.coloring import *
+            from Drawlib_V2.consoletools import *
+            from Drawlib_V2.core import *
+            from Drawlib_V2.dtypes import *
+            from Drawlib_V2.fonts import *
+            from Drawlib_V2.generators import *
+            from Drawlib_V2.imaging import *
+            from Drawlib_V2.linedraw import *
+            from Drawlib_V2.manip import *
+            from Drawlib_V2.objects import *
+            from Drawlib_V2.pointGroupAlgorithms import *
+            from Drawlib_V2.shapes import *
+            from Drawlib_V2.terminal import *
+        except:
+            os.system("")
+            print("\033[31mFailed to import drawlib, please make sure playground is either in an approriate folder relative to Drawlib.\033[0m")
+            exit()
 
 class RaisingDummyObject:
     '''LimitExec: Dummy object, raises.'''
@@ -74,6 +116,12 @@ _bufferedModes = ["Buffer","Hybrid"]
 _logFile = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground.tmp")
 _monitorScript = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground_monitor.py")
 
+def getCliHelp():
+    print(f"\nUsage: {os.path.basename(sys.executable)} {os.path.basename(__file__)} [--autoMon] [--sizeMon] [--noAutoLink]")
+    print("\nAutoMon:\n    Starts any monitor instance in auto mode, meaning it will not wait for input before drawing the buffer. (<outputObj>.clear() won't affect monitor)")
+    print("SizeMon:\n    Starts any monitor instance with the size of the buffer.")
+    print("NoAutoLink:\n    Won't automaticly link the DrawlibOut instance to its outputObj when the monitor is launched.\n")
+
 _waitingMonitor = True
 if "--autoMon" in sys.argv:
     _waitingMonitor = False
@@ -84,10 +132,7 @@ _nolinkOnMonLaunch = False
 if "--noAutoLink" in sys.argv:
     _nolinkOnMonLaunch = True
 if "--help" in sys.argv or "-h" in sys.argv or "--h" in sys.argv or "-help" in sys.argv:
-    print(f"\nUsage: {os.path.basename(sys.executable)} {os.path.basename(__file__)} [--autoMon] [--sizeMon] [--noAutoLink]")
-    print("\nAutoMon:\n    Starts any monitor instance in auto mode, meaning it will not wait for input before drawing the buffer. (<outputObj>.clear() won't affect monitor)")
-    print("SizeMon:\n    Starts any monitor instance with the size of the buffer.")
-    print("NoAutoLink:\n    Won't automaticly link the DrawlibOut instance to its outputObj when the monitor is launched.\n")
+    getCliHelp()
     exit()
 
 _playground_internal_python_org_exit = exit
@@ -101,23 +146,29 @@ def _texit():
     _playground_internal_python_org_exit()
 exit = _texit
 
-def launchMonitor(out=object):
+def launchMonitor(out=object,__autoMon=None,__sizeMon=None,__noAutoLink=None):
     global _loggbuff,_outputObj,_monitorProcess
+    if __autoMon != None and __autoMon == True:
+        _i_waitingMonitor = False
+    else:
+        _i_waitingMonitor = _waitingMonitor
+    _i_sizeMonitor = _sizeMonitor if __sizeMon == None else __sizeMon
+    _i_nolinkOnMonLaunch = _nolinkOnMonLaunch if __noAutoLink == None else __noAutoLink
     if out.mode not in _bufferedModes:
         print(f"\033[31mCan't launch monitor for non-buffered output.\033[0m")
         return
     _loggbuff = True
     _outputObj = out
-    if _nolinkOnMonLaunch == False:
+    if _i_nolinkOnMonLaunch == False:
         try:
             out._link()
         except: pass
     _sname = str(_outputObj).replace("<","@a").replace(">","@b").replace(" ","@s").replace("'","@q").replace('"','@d')
-    _pargs = [sys.executable, _monitorScript, "-oname",_sname, "-wmon",str(_waitingMonitor), "-omode",str(_outputObj.mode)]
+    _pargs = [sys.executable, _monitorScript, "-oname",_sname, "-wmon",str(_i_waitingMonitor), "-omode",str(_outputObj.mode)]
     if _outputObj.linked != None:
         _bsname = str(_outputObj.linked.buffer).replace("<","@a").replace(">","@b").replace(" ","@s").replace("'","@q").replace('"','@d')
         _pargs.extend(["-buffOname",_bsname])
-    if _sizeMonitor == True:
+    if _i_sizeMonitor == True:
         _width, _height = out.getsize()
         _pargs.extend(["-xdim",str(_width), "-ydim",str(_height)])
     _monitorProcess = subprocess.Popen(_pargs, creationflags=subprocess.CREATE_NEW_CONSOLE)
