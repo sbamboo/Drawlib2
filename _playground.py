@@ -114,13 +114,22 @@ _outputObj = None
 _monitorProcess = None
 _bufferedModes = ["Buffer","Hybrid"]
 _logFile = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground.tmp")
-_monitorScript = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground_monitor.py")
+_monitorScript_1 = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground_monitor.py")
+_monitorScript_2 = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Drawlib_V2","_playground_monitor.py")
+
+if os.path.exists(_monitorScript_1):
+    _monitorScript = _monitorScript_1
+elif os.path.exists(_monitorScript_2):
+    _monitorScript = _monitorScript_2
+else:
+    _monitorScript = None
 
 def getCliHelp():
     print(f"\nUsage: {os.path.basename(sys.executable)} {os.path.basename(__file__)} [--autoMon] [--sizeMon] [--noAutoLink]")
     print("\nAutoMon:\n    Starts any monitor instance in auto mode, meaning it will not wait for input before drawing the buffer. (<outputObj>.clear() won't affect monitor)")
     print("SizeMon:\n    Starts any monitor instance with the size of the buffer.")
-    print("NoAutoLink:\n    Won't automaticly link the DrawlibOut instance to its outputObj when the monitor is launched.\n")
+    print("NoAutoLink:\n    Won't automaticly link the DrawlibOut instance to its outputObj when the monitor is launched.")
+    print("\nInfo:\n    Arguments can be applied even when CLI args aren't avaliable by using '__<argName> =True' when using launchMonitor().\n    Example: launchMonitor(<outputObj>,__sizeMon=True)")
 
 _waitingMonitor = True
 if "--autoMon" in sys.argv:
@@ -156,6 +165,9 @@ def launchMonitor(out=object,__autoMon=None,__sizeMon=None,__noAutoLink=None):
     _i_nolinkOnMonLaunch = _nolinkOnMonLaunch if __noAutoLink == None else __noAutoLink
     if out.mode not in _bufferedModes:
         print(f"\033[31mCan't launch monitor for non-buffered output.\033[0m")
+        return
+    if _monitorScript == None:
+        print(f"\033[31mCan't launch monitor, monitor script not found.\033[0m")
         return
     _loggbuff = True
     _outputObj = out
