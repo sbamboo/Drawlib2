@@ -410,3 +410,10 @@ def fillBoundaryGap(splitPixelGroup):
                     new_coordinates.append(current_coord)
     # Return
     return {"ch":new_characters,"po":new_coordinates}
+
+def fixPostStretchLPcorner(texture):
+    if len(texture) > 1:
+        if len(texture[-1]) == len(texture[-2])-1:
+            texture[-1] += texture[-1][-1]
+        return texture
+    else: return texture

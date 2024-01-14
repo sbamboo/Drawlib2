@@ -1,10 +1,13 @@
-from core import DrawlibOut,Buffer,BufferCachedClear
-from terminal import reset_write_head
-from shapes import *
-from coloring import TextObj
-from libs.conUtils import clear,pause
+import os,sys
+parent = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(parent,"..","..")))
 
-import os
+from Drawlib_V2.core import DrawlibOut,Buffer,BufferCachedClear
+from Drawlib_V2.terminal import reset_write_head
+from Drawlib_V2.shapes import *
+from Drawlib_V2.coloring import TextObj
+from Drawlib_V2.libs.conUtils import clear,pause
+
 from time import sleep
 
 def bclear(output=object):

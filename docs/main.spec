@@ -12,9 +12,11 @@ Outputs:
 
 General rules:
 1. Al coorinates must originate by shape/objects (x:0,y:0 = TopLeft)
+*Moved to objectiveCLI project
 
 OrginPoint:
   This function can offset the origin-point of a shape/object.
   It takes X,Y,Origin
   Where origin can be: TL,TR,BL,BR,Center,Top,Left,Right,Bottom,{offX,offY}
   A instance of the orgin-point handler of any ab
+*Moved to objectiveCLI project

@@ -60,7 +60,7 @@ class drawlibObj():
     # Put
     def put(self,output=None,clamps=None,excludeClamped=True):
         if self.splitPixelGroup == None: self.make()
-        self.splitPixelGroup.draw(output,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+        self.splitPixelGroup.put(output,clamps=clamps,excludeClamped=excludeClamped)
         return self
 
 # Template object for custom generator function to be added by user

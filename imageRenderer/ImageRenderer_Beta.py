@@ -1,6 +1,6 @@
 # Author: Simon Kalmi Claesson
-# Version: 2.1
-# Changelog: Added alpha support for boxMode
+# Version: 2.2
+# Changelog: Fixed a bug where the image would be monochromed if the image was not in RGB mode, added noSafeConv flag to disable the fix incase it breaks something.
 
 # [Imports]
 import os
@@ -95,7 +95,7 @@ def getChar(charset,charIndex,safe=False):
     return charset[charIndex]
 
 # [Main Function]
-def ImageRenderer(image=str,rentype="ascii",mode=None,char=None,pc=False,method=None,invert=False,monochrome=False,width=None,height=None,resampling="lanczos",asTexture=False,colorMode="pythonAnsi",textureCodec=None,delimitChars=False):
+def ImageRenderer(image=str,rentype="ascii",mode=None,char=None,pc=False,method=None,invert=False,monochrome=False,width=None,height=None,resampling="lanczos",asTexture=False,colorMode="pythonAnsi",textureCodec=None,delimitChars=False,noSafeConv=False):
     types = {
         "image":str,
         "rentype":str,
@@ -111,7 +111,8 @@ def ImageRenderer(image=str,rentype="ascii",mode=None,char=None,pc=False,method=
         "asTexture":bool,
         "colorMode":str,
         "textureCodec":str,
-        "delimitChars":bool
+        "delimitChars":bool,
+        "noSafeConv":bool
     }
     for _var,_type in types.items():
         if locals()[_var] != None:
@@ -175,6 +176,14 @@ def ImageRenderer(image=str,rentype="ascii",mode=None,char=None,pc=False,method=
 
         # Open the image
         image = Image.open(image)
+
+        # Check color mode and attempt to make into RGB
+        if noSafeConv == False:
+            try:
+                if image.mode != "RGB":
+                    image = image.convert("RGB")
+            except Exception as e:
+                raise Exception(f"ImageRenderer catched an error when trying to convert the image to RGB. To disable the conversion attempt use 'noSafeConv=True'. \nDetails:{e}")
 
         # Scale the image if width and/or height arguments are provided
         if width or height:
@@ -264,7 +273,9 @@ def ImageRenderer(image=str,rentype="ascii",mode=None,char=None,pc=False,method=
                             char = stringPrepper(getChar(charset,charIndex,True),pixelToHexColor(pixel),False,colorMode)
                     if delimitChars == True:
                         char = ";delim;" + char
-                    line += char
+                    try:
+                        line += char
+                    except: pass
                 # BOX
                 elif rentype == "box":
                     # FOREGROUND
@@ -341,6 +352,7 @@ if __name__ == "__main__":
     parser.add_argument("-asTexture", action="store_true", help="Output the ASCII as a drawlib Texture")
     parser.add_argument("-colorMode", default="pythonAnsi", help="Colormode to use (pythonAnsi,pansies)")
     parser.add_argument("-textureCodec", help="Codec to use in the text (utf, cp1252, etc.)")
+    parser.add_argument("-noSafeConv", action="store_true", help="Disable the conversion to RGB mode attempt.")
     args = parser.parse_args()
     # Execute
     returnValue = None
@@ -358,7 +370,8 @@ if __name__ == "__main__":
         "resampling":args.resampling,
         "asTexture":args.asTexture,
         "colorMode":args.colorMode,
-        "textureCodec":args.textureCodec
+        "textureCodec":args.textureCodec,
+        "noSafeConv":args.noSafeConv
     }
     newMapping = dict()
     for key,value in mapping.items():

@@ -123,6 +123,7 @@ def picklePrioCopy(_dict):
 
 # region Buffer & Output classes
 class Buffer():
+    '''The standard Drawlib buffer.'''
     def __init__(self,width,height,fallbackChar=" ",autoStr=True):
         if height == "vh" or isinstance(height,MethodType): height = int(getConSize()[-1])
         if width == "vw" or isinstance(width,MethodType): width = int(getConSize()[0])
@@ -306,6 +307,7 @@ class Buffer():
                     self.put(xi,y,st)
 
 class BufferCachedClear():
+    '''Same as the standard Drawlib buffer but with a cache for clearing. (Potentially faster clearing)'''
     def __init__(self,width,height,fallbackChar=" ",autoStr=True):
         if height == "vh" or isinstance(height,MethodType): height = int(getConSize()[-1])
         if width == "vw" or isinstance(width,MethodType): width = int(getConSize()[0])
@@ -547,7 +549,7 @@ class BufferOutput(Output):
         if buffInst != None:
             self.buffer = buffInst
         else:
-            self.buffer = Buffer(width,height,fallbackChar=fallbackChar,autoStr=autoStr)
+            self.buffer = BufferCachedClear(width,height,fallbackChar=fallbackChar,autoStr=autoStr)
     def create(self):
         self.buffer.create()
         return self
@@ -556,6 +558,8 @@ class BufferOutput(Output):
     def clear(self):
         self.buffer.clear()
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
+        ansi = autoNoneColor(baseColor,palette)
+        if ansi != None: inp = f"\033[{ansi}{inp}"
         # put
         self.buffer.put(x,y,st=inp)
     def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):
@@ -632,7 +636,7 @@ class HybridOutput(Output):
         if buffInst != None:
             self.buffer = buffInst
         else:
-            self.buffer = Buffer(self.conSize[0],self.conSize[-1],fallbackChar=fallbackChar,autoStr=autoStr)
+            self.buffer = BufferCachedClear(self.conSize[0],self.conSize[-1],fallbackChar=fallbackChar,autoStr=autoStr)
     def getSize(self):
         self.conSize = getConSize()
         return self.conSize
@@ -652,7 +656,9 @@ class HybridOutput(Output):
         self.buffer.clear()
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=DrawlibStdPalette,skpBuf=False):
         baseColor = autoNoneColor(baseColor,palette)
-        if skpBuf != True: self.buffer.put(x,y,st=inp)
+        if skpBuf != True:
+            if baseColor != None: _inp = f"\033[{baseColor}{inp}"
+            self.buffer.put(x,y,st=_inp)
         draw(x,y,inp,baseColor)
     def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):
         '''Giving clamps will overwrite ranges.'''
@@ -699,7 +705,7 @@ class ChannelOutput(Output):
         if buffInst != None:
             self.buffer = buffInst
         else:
-            self.buffer = Buffer(width,height,fallbackChar=fallbackChar,autoStr=autoStr)
+            self.buffer = BufferCachedClear(width,height,fallbackChar=fallbackChar,autoStr=autoStr)
         self.channelClassInstance = channelObj
     def create(self):
         self.buffer.create()
@@ -709,6 +715,8 @@ class ChannelOutput(Output):
     def clear(self):
         self.buffer.clear()
     def put(self,x=int,y=int,inp=str,baseColor=None,palette=None):
+        ansi = autoNoneColor(baseColor,palette)
+        if ansi != None: inp = f"\033[{ansi}{inp}"
         # put
         self.buffer.put(x,y,st=inp)
     def draw(self,nc=False,baseColor=None,palette=DrawlibStdPalette,xRange=None,yRange=None,clamps=None):

@@ -51,7 +51,7 @@ def load_asset(filepath,encoding="utf-8"):
 	# Get texture
 	texture = splitContent
 	# Return config and texture
-	return int(posX), int(posY), list(texture), str(color), list(xtra), str(comment)
+	return int(posX), int(posY), list(texture), str(color), list(xtra), str(commentLine)
 def toV1frmt(args,posX=None,posY=None,texture=None,color=None,extra=None,comment=None):
 	'''Simple converter function that takes params and strips out extra config parameters and the comment text.'''
 	if posX == None:
@@ -67,10 +67,10 @@ def toV1frmt(args,posX=None,posY=None,texture=None,color=None,extra=None,comment
 def render_asset(posX,posY,texture,output=object,baseColor=None,palette=DrawlibStdPalette,drawNc=False,supressDraw=False,clamps=None,excludeClamped=True):
     '''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
     if excludeClamped == True:
-        if check_clampTX(xPos,yPos,texture,clamps) == False and clamps != None:
+        if check_clampTX(posX,posY,texture,clamps) == False and clamps != None:
             return
     else:
-        texture = clampTX(xPos,yPos,texture,clamps)
+        texture = clampTX(posX,posY,texture,clamps)
     # Use a modified sprite renderer
     #print("\033[s") # Save cursorPos
     c = 0
@@ -81,9 +81,19 @@ def render_asset(posX,posY,texture,output=object,baseColor=None,palette=DrawlibS
         c += 1
     #print("\033[u\033[2A") # Load cursorPos
 
+# Exception for unloaded files
+class UnloadedAsset(Exception):
+    def __init__(self,message="Drawlib.Assets: Attempted operation on unloaded asset, please use .load() first or use the autoLoad=True param when creating the object!"):
+        self.message = message
+        super().__init__(self.message)
+class UnloadedTexture(Exception):
+    def __init__(self,message="Drawlib.Assets: Attempted operation on unloaded texture, please use .load() first or use the autoLoad=True param when creating the object!"):
+        self.message = message
+        super().__init__(self.message)
+
 # Asset class for ease of use
 class asset():
-	def __init__(self,filepath=str,output=object,baseColor=None,palette=DrawlibStdPalette,autoLoad=False):
+	def __init__(self,filepath=str,output=object,palette=DrawlibStdPalette,autoLoad=True):
 		self.filepath = filepath
 
 		self.posX = None
@@ -94,27 +104,31 @@ class asset():
 		self.comment = None
 
 		self.output = output
-		self.baseColor = baseColor
 		self.palette = palette
 		if autoLoad == True: self.load()
 	def load(self,encoding="utf-8"):
 		self.posX,self.posY,self.texture,self.color,self.extra,self.comment = load_asset(self.filepath,encoding)
 	def render(self,drawNc=False,clamps=None,excludeClamped=True):
 		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
+		if self.texture == None: raise UnloadedAsset()
+		render_asset(self.posX, self.posY, self.texture, self.output, self.color,self.palette,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
 	def render_put(self,clamps=None,excludeClamped=True):
 		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+		if self.texture == None: raise UnloadedAsset()
+		render_asset(self.posX, self.posY, self.texture, self.output, self.color,self.palette,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 	def asTexture(self):
+		if self.texture == None: raise UnloadedAsset()
 		return self.texture
 	def asAsset(self):
+		if self.texture == None: raise UnloadedAsset()
 		return self.posX, self.posY, self.texture, self.color
 	def asAssetObj(self):
+		if self.texture == None: raise UnloadedAsset()
 		return {"posX":self.posX,"posY":self.posY,"texture":self.texture,"color":self.color,"extra":self.extra,"comment":self.comment}
 
 # Texture class for ease of use
 class texture():
-	def __init__(self,filepath=str,output=object,baseColor=None,palette=DrawlibStdPalette,autoLoad=False):
+	def __init__(self,filepath=str,output=object,baseColor=None,palette=DrawlibStdPalette,autoLoad=True):
 		self.filepath = filepath
 		
 		self.texture = None
@@ -127,15 +141,20 @@ class texture():
 		self.texture = load_texture(self.filepath,encoding)
 	def render(self,posX=int,posY=int,drawNc=False,clamps=None,excludeClamped=True):
 		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
+		if self.texture == None: raise UnloadedTexture()
+		render_asset(self.posX, self.posY, self.texture, self.output, self.baseColor,self.palette,self.palette,drawNc,clamps=clamps,excludeClamped=excludeClamped)
 	def render_put(self,posX=int,posY=int,clamps=None,excludeClamped=True):
 		'''Note: Not excludingClamped values will cause the render attempt to be ignored!'''
-		render_asset(self.posX, self.posY, self.texture, self.output, self.palette,self.baseColor,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
+		if self.texture == None: raise UnloadedTexture()
+		render_asset(self.posX, self.posY, self.texture, self.output, self.baseColor,self.palette,self.palette,supressDraw=True,clamps=clamps,excludeClamped=excludeClamped)
 	def asTexture(self):
+		if self.texture == None: raise UnloadedTexture()
 		return self.texture
 	def asAsset(self,posX=int,posY=int,color=None):
+		if self.texture == None: raise UnloadedTexture()
 		return posX, posY, self.texture, color
 	def asAssetObj(self,posX=int,posY=int,color=None,extra=None,comment=None):
+		if self.texture == None: raise 
 		if color == None: color = ""
 		if extra == None: extra = []
 		if comment == None: comment = ""

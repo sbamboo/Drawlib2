@@ -62,6 +62,23 @@ def autoNoneColor(color,palette):
                 val = '{};2;{};{};{}'.format(48 if background else 38, rgb[0],rgb[1],rgb[2]) + "m"
             else:
                 return val
+        else:
+            lowPalette = {}
+            for key in palette.keys():
+                lowPalette[key.lower()] = palette[key]
+            if lowPalette.get(color) != None:
+                val = lowPalette.get(color)
+                if "#" in val:
+                    background = False
+                    if val.strip().startswith("#!"):
+                        background = True
+                        val = val.replace("#!","#",1)
+                    val = val.replace("#","")
+                    lv = len(val)
+                    rgb = [int(val[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)]
+                    val = '{};2;{};{};{}'.format(48 if background else 38, rgb[0],rgb[1],rgb[2]) + "m"
+                else:
+                    return val
 
 class TextObj():
     def __init__(self,text,customTags={}):

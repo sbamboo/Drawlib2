@@ -24,6 +24,7 @@ from .libs import stringTags as lib_stringTags
 fill_terminal = linedraw.fill_terminal
 reset_write_head = terminal.reset_write_head
 stdpalette = coloring.DrawlibStdPalette
+DrawlibOut = core.DrawlibOut
 
 baseGenerator = generators.baseGenerator
 repeatGenerator = generators.repeatGenerator
@@ -53,3 +54,4 @@ class DrawlibRenderer():
         self.fill_terminal = fill_terminal
         self.stdpalette = stdpalette
         self.reset_write_head = terminal.reset_write_head
+        self.DrawlibOut = core.DrawlibOut

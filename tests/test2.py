@@ -1,14 +1,18 @@
-from core import DrawlibOut,CellOpOutofBounds
-from imaging import boxImage
-from libs.conUtils import pause,clear
-from consoletools import sizeAssist
+import os,sys
+parent = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(os.path.join(parent,"..","..")))
+
+from Drawlib_V2.core import DrawlibOut,CellOpOutofBounds
+from Drawlib_V2.imaging import boxImage
+from Drawlib_V2.libs.conUtils import pause,clear
+from Drawlib_V2.consoletools import sizeAssist
 
 out = DrawlibOut(mode="Buffer")
 
 out._link()
-width, height = out.linked.buffer.bufferSize
+width, height = out.getsize()
 
-img = boxImage("C:\\Users\\simon\\Desktop\\SUNP0001_4.jpg",output=out,mode="foreground",width=width,height=height)
+img = boxImage(os.path.join(parent,"test.png"),output=out,mode="foreground",width=width,height=height)
 
 clear()
 #sizeAssist(*img.getSize(),out,True)
