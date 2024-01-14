@@ -2,11 +2,11 @@ import os,sys
 parent = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(parent,"..","..")))
 
-from Drawlib_V2.core import DrawlibOut,Buffer,BufferCachedClear
-from Drawlib_V2.terminal import reset_write_head
-from Drawlib_V2.shapes import *
-from Drawlib_V2.coloring import TextObj
-from Drawlib_V2.libs.conUtils import clear,pause
+from Drawlib2.core import DrawlibOut,Buffer,BufferCachedClear
+from Drawlib2.terminal import reset_write_head
+from Drawlib2.shapes import *
+from Drawlib2.coloring import TextObj
+from Drawlib2.libs.conUtils import clear,pause
 
 from time import sleep
 

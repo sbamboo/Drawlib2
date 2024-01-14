@@ -4,10 +4,10 @@ parent = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(parent,"..","..")))
 
 # Import
-from Drawlib_V2.core import DrawlibOut
-from Drawlib_V2.imaging import boxImage
-from Drawlib_V2.libs.conUtils import clear,pause
-from Drawlib_V2.manip import stretchShapeXlp,fixPostStretchLPcorner
+from Drawlib2.core import DrawlibOut
+from Drawlib2.imaging import boxImage
+from Drawlib2.libs.conUtils import clear,pause
+from Drawlib2.manip import stretchShapeXlp,fixPostStretchLPcorner
 
 # Create a output object and use "_link()" to ensure its initialized.
 out = DrawlibOut(mode="Buffer")

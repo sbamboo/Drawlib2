@@ -2,10 +2,10 @@ import os,sys
 parent = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(parent,"..","..")))
 
-from Drawlib_V2.core import DrawlibOut,CellOpOutofBounds
-from Drawlib_V2.imaging import boxImage
-from Drawlib_V2.libs.conUtils import pause,clear
-from Drawlib_V2.consoletools import sizeAssist
+from Drawlib2.core import DrawlibOut,CellOpOutofBounds
+from Drawlib2.imaging import boxImage
+from Drawlib2.libs.conUtils import pause,clear
+from Drawlib2.consoletools import sizeAssist
 
 out = DrawlibOut(mode="Buffer")
 

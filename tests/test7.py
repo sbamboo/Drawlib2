@@ -2,9 +2,9 @@ import os,sys
 parent = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(parent,"..","..")))
 
-from Drawlib_V2.objects import rectangleObj2
-from Drawlib_V2.core import DrawlibOut
-from Drawlib_V2.generators import rainbowGenerator
+from Drawlib2.objects import rectangleObj2
+from Drawlib2.core import DrawlibOut
+from Drawlib2.generators import rainbowGenerator
 
 out = DrawlibOut(mode="Buffer")
 

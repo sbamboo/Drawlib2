@@ -40,27 +40,48 @@ except:
         from .terminal import *
     except:
         try:
-            from Drawlib_V2.libs.conUtils import *
-            from Drawlib_V2.libs.crshpiptools import *
-            from Drawlib_V2.libs.stringTags import *
-            from Drawlib_V2.assets import *
-            from Drawlib_V2.coloring import *
-            from Drawlib_V2.consoletools import *
-            from Drawlib_V2.core import *
-            from Drawlib_V2.dtypes import *
-            from Drawlib_V2.fonts import *
-            from Drawlib_V2.generators import *
-            from Drawlib_V2.imaging import *
-            from Drawlib_V2.linedraw import *
-            from Drawlib_V2.manip import *
-            from Drawlib_V2.objects import *
-            from Drawlib_V2.pointGroupAlgorithms import *
-            from Drawlib_V2.shapes import *
-            from Drawlib_V2.terminal import *
+            from Drawlib2.libs.conUtils import *
+            from Drawlib2.libs.crshpiptools import *
+            from Drawlib2.libs.stringTags import *
+            from Drawlib2.assets import *
+            from Drawlib2.coloring import *
+            from Drawlib2.consoletools import *
+            from Drawlib2.core import *
+            from Drawlib2.dtypes import *
+            from Drawlib2.fonts import *
+            from Drawlib2.generators import *
+            from Drawlib2.imaging import *
+            from Drawlib2.linedraw import *
+            from Drawlib2.manip import *
+            from Drawlib2.objects import *
+            from Drawlib2.pointGroupAlgorithms import *
+            from Drawlib2.shapes import *
+            from Drawlib2.terminal import *
         except:
-            os.system("")
-            print("\033[31mFailed to import drawlib, please make sure playground is either in an approriate folder relative to Drawlib.\033[0m")
-            exit()
+            try:
+                _parent = os.path.dirname(os.path.abspath(__file__))
+                sys.path.append(os.path.abspath(os.path.join(_parent,"..")))
+                from Drawlib2.libs.conUtils import *
+                from Drawlib2.libs.crshpiptools import *
+                from Drawlib2.libs.stringTags import *
+                from Drawlib2.assets import *
+                from Drawlib2.coloring import *
+                from Drawlib2.consoletools import *
+                from Drawlib2.core import *
+                from Drawlib2.dtypes import *
+                from Drawlib2.fonts import *
+                from Drawlib2.generators import *
+                from Drawlib2.imaging import *
+                from Drawlib2.linedraw import *
+                from Drawlib2.manip import *
+                from Drawlib2.objects import *
+                from Drawlib2.pointGroupAlgorithms import *
+                from Drawlib2.shapes import *
+                from Drawlib2.terminal import *
+            except:
+                os.system("")
+                print("\033[31mFailed to import drawlib, please make sure playground is either in an approriate folder relative to Drawlib.\033[0m")
+                exit()
 
 class RaisingDummyObject:
     '''LimitExec: Dummy object, raises.'''
@@ -115,7 +136,7 @@ _monitorProcess = None
 _bufferedModes = ["Buffer","Hybrid"]
 _logFile = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground.tmp")
 _monitorScript_1 = os.path.join(os.path.dirname(os.path.realpath(__file__)),"_playground_monitor.py")
-_monitorScript_2 = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Drawlib_V2","_playground_monitor.py")
+_monitorScript_2 = os.path.join(os.path.dirname(os.path.realpath(__file__)),"Drawlib2","_playground_monitor.py")
 
 if os.path.exists(_monitorScript_1):
     _monitorScript = _monitorScript_1
