@@ -76,12 +76,8 @@ def pixelGroup_to_sprite(pixel_data, char="#", negChar=" "):
     for pixel in pixel_data:
         x, y = pixel
         rows[y - min_y][x - min_x] = char
-    # Put the rows in the result
-    result = []
-    for row in rows:
-        result.append("".join(row))
     # Create sprite and return it
-    sprite = {"xPos":min_x, "yPos":min_y, "tx":result}
+    sprite = {"xPos":min_x, "yPos":min_y, "tx":rows}
     return sprite
 
 def cmpxPixelGroup_to_sprite(pixel_data, negChar=" "):
@@ -100,10 +96,8 @@ def cmpxPixelGroup_to_sprite(pixel_data, negChar=" "):
         x, y = pixel['pos']
         char = pixel['char']
         grid[y][x] = char
-    # Put the rows in the result
-    result = [''.join(row) for row in grid]
     # Create sprite and return it
-    sprite = {"xPos":lowest_x, "yPos":lowest_y, "tx":result}
+    sprite = {"xPos":lowest_x, "yPos":lowest_y, "tx":grid}
     return sprite
 
 def sprite_to_pixelGroup(sprite, char, exclusionChar):
@@ -189,6 +183,7 @@ def render_sprite(spriteTexture,output=object,baseColor=None,palette=None,drawNc
     OposY = int(yPos)
     for line in texture:
         yPos = OposY + c
+        if type(line) == list: line = ''.join(line) # list-texture fix
         base_draw(line,xPos,yPos,output,baseColor,palette,drawNc,supressDraw=supressDraw)
         c += 1
     #print("\033[u\033[2A") # Load cursorPos
