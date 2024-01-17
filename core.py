@@ -78,6 +78,7 @@ def checkSectionRange(xRange=None,yRange=None,bufferXKeys=list,bufferYKeys=list)
     section = False
     validRange = True
     if xRange != None:
+        if type(xRange) == range: xRange = [xRange[0],xRange[-1]+1]
         if isinstance(xRange, (list,tuple)) != True or len(xRange) > 2: raise InvalidSectionRangeType()
         errMsg = ""
         try:
@@ -93,6 +94,7 @@ def checkSectionRange(xRange=None,yRange=None,bufferXKeys=list,bufferYKeys=list)
         xRange = range(xRange[0],xRange[1])
         section = True
     if yRange != None:
+        if type(yRange) == range: yRange = [yRange[0],yRange[-1]+1]
         if isinstance(yRange, (list,tuple)) != True or len(yRange) > 2: raise InvalidSectionRangeType()
         try:
             if yRange[0] < int(bufferYKeys[0]) or yRange[1] > int(bufferYKeys[-1]):
@@ -283,6 +285,32 @@ class Buffer():
                 lines.append("")
                 for x in self.buffer[y]:
                     lines[y] += self.buffer[y][x]
+            return lines
+    def getTxLines(self,xRange=None,yRange=None):
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(self.buffer[0].keys()), list(self.buffer.keys()))
+        # get sectioned
+        if section == True:
+            lines = []
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    lines.append([])
+                    xKeys = list(self.buffer[y].keys())
+                    for x in xRange:
+                        if x in xKeys:
+                            lines[y].append(self.buffer[y][x])
+            return lines
+        # get un-sectioned
+        else:
+            lines = []
+            for y in self.buffer:
+                lines.append([])
+                for x in self.buffer[y]:
+                    lines[y].append(self.buffer[y][x])
             return lines
     def copyStr(self,xRange=None,yRange=None):
         lines = self.getStrLines(xRange,yRange)
@@ -489,6 +517,32 @@ class BufferCachedClear():
                 lines.append("")
                 for x in self.buffer[y]:
                     lines[y] += self.buffer[y][x]
+            return lines
+    def getTxLines(self,xRange=None,yRange=None):
+        # raise on non-created
+        if self.isCreated() == False:
+            raise UncreatedBuffer()
+        # Check sections
+        section,xRange,yRange = checkSectionRange(xRange,yRange, list(self.buffer[0].keys()), list(self.buffer.keys()))
+        # get sectioned
+        if section == True:
+            lines = []
+            yKeys = list(self.buffer.keys())
+            for y in yRange:
+                if y in yKeys:
+                    lines.append([])
+                    xKeys = list(self.buffer[y].keys())
+                    for x in xRange:
+                        if x in xKeys:
+                            lines[y].append(self.buffer[y][x])
+            return lines
+        # get un-sectioned
+        else:
+            lines = []
+            for y in self.buffer:
+                lines.append([])
+                for x in self.buffer[y]:
+                    lines[y].append(self.buffer[y][x])
             return lines
     def copyStr(self,xRange=None,yRange=None):
         lines = self.getStrLines(xRange,yRange)
