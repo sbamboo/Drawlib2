@@ -16,6 +16,7 @@ try:
     from . import shapes
     from . import terminal
     from . import tools
+    from . import tui
     from . import version
 except:
     from Drawlib2 import assets
@@ -34,6 +35,7 @@ except:
     from Drawlib2 import shapes
     from Drawlib2 import terminal
     from Drawlib2 import tools
+    from Drawlib2 import tui
     from Drawlib2 import version
 
 from .libs import conUtils as lib_conUtils
@@ -74,6 +76,7 @@ class DrawlibRenderer():
         self.shapes = shapes
         self.terminal = terminal
         self.tools = tools
+        self.tui = tui
         self.version = version
         
         self.fill_terminal = fill_terminal

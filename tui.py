@@ -108,6 +108,7 @@ def format_size(size):
     return f"{size:.2f}{suffixes[suffix_index]}"
 
 class positional_printer():
+    '''INTERNAL: Class for printing lines with pos.'''
     def __init__(self,pos=tuple):
         self.pos = pos
         self.yind = 0
@@ -116,6 +117,33 @@ class positional_printer():
         self.yind+=1
     def rs(self):
         self.yind = 0
+
+def prepANSI(string):
+    '''INTERNAL: Function to placehold ANSI sequences in a string.'''
+    ANSI_PREFIX = "\033["
+    ANSI_SUFFIX = "m"
+    def replace_ansi(match):
+        ansi_code = match.group(1)
+        color_code = ansi_code.lstrip(ANSI_PREFIX).rstrip(ANSI_SUFFIX)
+        return f"%{color_code}%"
+    import re
+    pattern = re.compile(f"({re.escape(ANSI_PREFIX)}\d+{re.escape(ANSI_SUFFIX)})")
+    replaced_string = re.sub(pattern, replace_ansi, string)
+    return replaced_string
+
+def handleANSI(string):
+    '''INTERNAL: Function to un-placegold ANSI sequences in a string.'''
+    ANSI_PREFIX = "\033["
+    ANSI_SUFFIX = "m"
+    def replace_ansi(match):
+        color_code = match.group(1)
+        space = " "*len("%"+str(color_code)+"%")
+        _len = len( f"{ANSI_PREFIX}{color_code}{ANSI_SUFFIX}{space}" )
+        return f"{ANSI_PREFIX}{color_code}{ANSI_SUFFIX}".center(_len)
+    import re
+    pattern = r"%(\d+)%"
+    replaced_string = re.sub(pattern, replace_ansi, string)
+    return replaced_string
 
 # endregion HELPERS
 
@@ -288,7 +316,7 @@ def multi_select_display_items(selected_index, items, selkey, checked_states, se
         local_print(selSuffix)
 
 # Main function to show a dictionary and allow multiple selections
-def multi_selector(nameDescDict=dict, selKey="desc", sti=0, selTitle="Select an option: (press q/esc to exit)", selSuffix=None, dispWidth="vw", prechecked=[], stripAnsi=False, formatting=None, prMode="std", posPrModeCoords=None, stdPrModeClear=False):
+def multi_selector(nameDescDict=dict, selKey="desc", sti=0, selTitle="Select an option: (press q/esc to exit)", selSuffix=None, dispWidth="vw", prechecked=[], stripAnsi=False, formatting=None, prMode="std", posPrModeCoords=None, clearing=False):
     """
     Function to show a mukti-item selection from a dictionary.
     Add "ncb:" to your value to ommit the curly brackets.
@@ -302,7 +330,7 @@ def multi_selector(nameDescDict=dict, selKey="desc", sti=0, selTitle="Select an 
     disp = True
     while True:
         if disp == True:
-            multi_select_display_items(selected_index, nameDescDict, selKey, checked_states, selTitle, selSuffix, dispWidth, stripAnsi, formatting, prMode, posPrModeCoords, stdPrModeClear)
+            multi_select_display_items(selected_index, nameDescDict, selKey, checked_states, selTitle, selSuffix, dispWidth, stripAnsi, formatting, prMode, posPrModeCoords, clearing)
         else:
             disp = True
         key = get_keypress()
@@ -330,7 +358,7 @@ def multi_selector(nameDescDict=dict, selKey="desc", sti=0, selTitle="Select an 
     selected_options = [key for i, key in enumerate(nameDescDict.keys()) if checked_states[i]]
     return selected_options,None
 
-def multi_selector_dir(dirpath, sti=0, selTitle="Select an option: (press q/esc to exit)", selSuffix=None, dispWidth="vw", prechecked=[], stripAnsi=False, formatting=None, extraElems=None, prMode="std", posPrModeCoords=None, stdPrModeClear=False):
+def multi_selector_dir(dirpath, sti=0, selTitle="Select an option: (press q/esc to exit)", selSuffix=None, dispWidth="vw", prechecked=[], stripAnsi=False, formatting=None, extraElems=None, prMode="std", posPrModeCoords=None, clearing=False):
     '''Wrapper function to show a mutli-select ui for a folders content.'''
     if os.path.exists(dirpath):
         items = os.listdir(dirpath)
@@ -386,7 +414,7 @@ def multi_selector_dir(dirpath, sti=0, selTitle="Select an option: (press q/esc 
             formatting=formatting,
             prMode=prMode,
             posPrModeCoords=posPrModeCoords,
-            stdPrModeClear=stdPrModeClear
+            clearing=clearing
         )
         nsels = []
         for sel in sels:
@@ -395,7 +423,86 @@ def multi_selector_dir(dirpath, sti=0, selTitle="Select an option: (press q/esc 
     else:
         return [],selbtn
     
+def drawTable(data=dict(), prMode="std", posPrModeCoords=None, clearing=False):
+    """
+    Function ported from libDrawlib by Simon Kalmi Claesson,
+    takes a dictionary and renders it as a table.
 
-#wormatron table
+    Example:
+        ```
+        {
+            "Header1":["h1elem1","h1elem2"],
+            "Header2":["h2elem1","h2elem2"]
+        }
+        ```
+        ```
+        Turns into:
+        ╭───────────┬───────────╮
+        │  Header1  │  Header2  │
+        ├-----------┼-----------┤
+        │  h1elem1  │  h2elem1  │
+        │  h1elem2  │  h2elem2  │
+        ╰───────────┴───────────╯
+        ```
+    """
+    # extract the headers from the dictionary keys
+    headers = list(data.keys())
+    num_columns = len(headers)
+
+    if clearing == True:
+        clear()
+    # create print obj
+    if prMode.lower() == "std":
+        local_print = print
+    else:
+        if posPrModeCoords == None:
+            posPrModeCoords = (0,1)
+        local_print = positional_printer(posPrModeCoords).print
+
+    # calculate the width of each column
+    widths = []
+
+    # iterate over each header to calculate the maximum width of that column
+    for header in headers:
+        # start by assuming the width is the length of the header string plus two padding spaces
+        width = len(header) + 2
+        # iterate over each value in the column to find the maximum width of that value
+        for value in data[header]:
+            # the width of each value is the length of the string plus two padding spaces
+            value_width = len(str(value)) + 2
+            # update the column width if the value width is greater
+            width = max(width, value_width)
+        # add the final column width to the list of widths
+        widths.append(width)
+
+    # calculate the width of the divider row
+    divider_width = sum(widths) + len(widths) - 1
+
+    # render the table
+    local_print("╭" + "┬".join("─" * width for width in widths) + "╮")
+
+    # render the header row
+    if len(headers) > 0:
+        header_row = "│"
+        for header, width in zip(headers, widths):
+            # center the header string in its column and add padding spaces on either side
+            header_row += header.center(width) + "│"
+        local_print(header_row)
+
+    # render the divider row
+    local_print("├" + "┼".join("-" * width for width in widths) + "┤")
+
+    # render each value row
+    if len(headers) > 0:
+        for i in range(len(data[headers[0]])):
+            value_row = "│"
+            for header, width in zip(headers, widths):
+                # center the value string in its column and add padding spaces on either side
+                value_row += handleANSI( prepANSI(str(data[header][i])).center(width) + "│")
+            local_print(value_row)
+
+    # render the bottom of the table
+    local_print("╰" + "┴".join("─" * width for width in widths) + "╯")
+
 
 #custom ui with borderchars
